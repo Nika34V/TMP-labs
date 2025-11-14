@@ -22,6 +22,158 @@ class PoFileConstants:
     MIN_TRANSLATED_LENGTH = 2
 
 
+class TextPreprocessor:
+    """Класс для подготовки текста к переводу"""
+
+    @staticmethod
+    def extract_formats(text: str) -> tuple[str, list, list, bool, bool]:
+        """
+        Извлекает форматирование из текста
+        Returns: (обработанный_текст, переменные, классы, unf, service_f)
+        """
+        substitution, substitution2 = "{%s}", "{+}"
+        variables, classes = [], []
+        unf = service_f = False
+
+        # Check python unnamed-format
+        if '%s' in text:
+            unf = True
+
+        # Save python named-format
+        count_format = text.count('%(')
+        for i in range(count_format):
+            f_pos = text.find('%(')
+            s_pos = text[f_pos:].find(')s')
+            named_format = text[f_pos:][:s_pos + 2]  # + ')s'
+            variables.append(named_format)
+            text = text.replace(named_format, substitution % (i + 1,), 1)
+
+        # Prepare string to work
+        if r'\"' in text:
+            service_f = True
+            text = text.replace(r'\"', '"')
+
+        # Save html classes
+        count_classes = text.count('class="')
+        for i in range(count_classes):
+            f_pos = text.find('class="')
+            s_pos = text[f_pos + 7:].find('"')
+            cls = f'class="{text[f_pos + 7:][:s_pos]}"'
+            text = text.replace(cls, substitution2, 1)
+            classes.append(cls)
+
+        return text, variables, classes, unf, service_f
+
+    @staticmethod
+    def restore_formats(translated_text: str, variables: list,
+                        classes: list, unf: bool, service_f: bool) -> str:
+        """Восстанавливает форматирование в переведенном тексте"""
+        substitution, substitution2 = "{%s}", "{+}"
+
+        # Fix python unnamed-format
+        if unf:
+            translated_text = translated_text.replace('%S', '%s')
+
+        # Return python named-format
+        for i in range(len(variables)):
+            translated_text = translated_text.replace(
+                substitution % (i + 1,), variables[i], 1)
+
+        # Return html classes
+        for i in range(len(classes)):
+            translated_text = translated_text.replace(
+                substitution2, classes[i], 1)
+
+        # Fix python service str
+        if service_f:
+            translated_text = translated_text.replace('"', r'\"')
+
+        return translated_text
+
+
+class TranslationClient:
+    """Класс для работы с переводчиком через Selenium"""
+
+    def __init__(self, driver: webdriver.Chrome):
+        self.driver = driver
+
+    def take_text(self) -> str:
+        """
+        Получает текст из поля вывода
+        NoSuchElementException thrown if the page didn't load correctly
+        """
+        random_pause()
+        try:
+            trans_text = self.driver.find_elements(
+                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
+        except NoSuchElementException:
+            self.driver.refresh()
+            trans_text = self.driver.find_elements(
+                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
+
+        if not trans_text:  # Multiple translations
+            trans_text = self.driver.find_elements(
+                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT_ALT)[-1:]
+
+        trans_text = [sentence.text for sentence in trans_text]
+        return ''.join(trans_text)
+
+    def send_for_translation(self, text: str, last_trans: str) -> str:
+        """Отправляет текст на перевод и возвращает результат"""
+        self.driver.find_element(
+            by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).clear()
+        self.driver.find_element(
+            by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).send_keys(text)
+
+        trans = self.take_text()
+
+        if trans == last_trans:  # If GT is late
+            trans = self.take_text()
+
+        return trans
+
+
+class TranslationService:
+    """Основной сервис перевода, координирующий работу препроцессора и клиента"""
+
+    def __init__(self, driver: webdriver.Chrome):
+        self.client = TranslationClient(driver)
+        self.preprocessor = TextPreprocessor()
+
+    def translate(self, text: str, last_trans: str, retry: int) -> str:
+        """
+        Основной метод перевода текста
+        Args:
+            text: Text to translate
+            last_trans: Last translate
+            retry: Attempts to translate
+
+        Returns: Translated text
+        """
+        # Подготовка текста
+        processed_text, variables, classes, unf, service_f = (
+            self.preprocessor.extract_formats(text))
+
+        # Перевод
+        try:
+            trans = self.client.send_for_translation(processed_text, last_trans)
+        except (NoSuchElementException, TimeoutException) as ex:
+            random_pause()
+            if retry:
+                print(f'[!] FAIL -> {text} | retry={retry} ({ex})')
+                return self.translate(text, last_trans, retry - 1)
+            else:
+                print(f'[!] No attempts left for -> {text}')
+                return ""
+
+        # Восстановление форматирования
+        trans = self.preprocessor.restore_formats(
+            trans, variables, classes, unf, service_f)
+
+        print(f'[+] {text} - {trans}')
+        return trans
+
+
 def random_pause():
     sleep(round(uniform(1.8, 2.1), 2))
 
@@ -82,104 +234,8 @@ def translate(dr: webdriver.Chrome, text: str,
 
     Returns: Translated text
     """
-    substitution, substitution2, variables, unf, service_f = (
-        "{%s}", "{+}", list(), False, False)
-
-    # Check python unnamed-format
-    if '%s' in text:
-        unf = True
-
-    # Save python named-format
-    count_format = text.count('%(')
-    for i in range(count_format):
-        f_pos = text.find('%(')
-        s_pos = text[f_pos:].find(')s')
-        named_format = text[f_pos:][:s_pos + 2]  # + ')s'
-        variables.append(named_format)
-        text = text.replace(named_format, substitution %
-                            (i + 1,), 1)
-
-    # Prepare string to work
-    if r'\"' in text:
-        service_f = True
-        text = text.replace(r'\"', '"')
-
-    # Save html classes
-    classes = list()
-    count_classes = text.count('class="')  # Only this entry: class=""
-    for i in range(count_classes):
-        f_pos = text.find('class="')
-        s_pos = text[f_pos + 7:].find('"')  # + 7 == len('class="')
-        cls = f'class="{text[f_pos + 7:][:s_pos]}"'
-        text = text.replace(cls, substitution2, 1)
-        classes.append(cls)
-
-    # Working with translator fields
-    # textarea.er8xn -> input field
-    # span.ryNqvb -> output text
-    def take_text() -> str:
-        """
-        Takes text from the output field and formats
-        NoSuchElementException thrown if the page didn't load correctly
-        """
-        random_pause()
-        try:
-            trans_text = dr.find_elements(
-                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
-        except NoSuchElementException:
-            dr.refresh()
-            trans_text = dr.find_elements(
-                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
-
-        if not trans_text:  # Multiple translations
-            # For example, in French there can be 2 translations of one word.
-            trans_text = dr.find_elements(
-                by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT_ALT)[-1:]
-        trans_text = [sentence.text for sentence in trans_text]
-        trans_text = ''.join(trans_text)
-        return trans_text
-
-    try:
-        dr.find_element(by=By.CSS_SELECTOR,
-                        value=TranslationSelectors.INPUT_FIELD).clear()
-        dr.find_element(by=By.CSS_SELECTOR,
-                        value=TranslationSelectors.INPUT_FIELD).send_keys(text)
-        trans = take_text()
-
-        if trans == last_trans:  # If GT is late
-            trans = take_text()
-
-
-    except (NoSuchElementException, TimeoutException) as ex:
-        random_pause()
-        if retry:
-            print(f'[!] FAIL -> {text} | retry={retry} ({ex})')
-            retry -= 1
-            return translate(dr=dr, text=text,
-                             last_trans=last_trans, retry=retry)
-        else:
-            print(f'[!] No attempts left for -> {text}')
-            return ""
-
-    # Fix python unnamed-format
-    if unf:
-        trans = trans.replace('%S', '%s')
-
-    # Return python named-format
-    for i in range(len(variables)):
-        trans = trans.replace(substitution % (i + 1,),
-                              variables[i], 1)
-
-    # Return html classes
-    for i in range(len(classes)):
-        trans = trans.replace(substitution2, classes[i], 1)
-
-    # Fix python service str
-    if service_f:
-        trans = trans.replace('"', r'\"')
-
-    print(f'[+] {text} - {trans}')
-    return trans
+    translation_service = TranslationService(dr)
+    return translation_service.translate(text, last_trans, retry)
 
 
 def translator(
@@ -251,7 +307,9 @@ def translator(
             string_text = s[s.find('"') + 1:s.rfind('"')].strip()
             if string_text:  # Simple translation
                 translated, found = translate(dr=dr,
-                    text=string_text, last_trans=last_trans, retry=retry), True
+                                              text=string_text,
+                                              last_trans=last_trans,
+                                              retry=retry), True
                 last_trans = translated
             else:  # Complex trans
                 if lines[i + 1].startswith('"'):  # It's complex text
@@ -326,12 +384,12 @@ def manager(codes: list,
             variables_copy = variables_copy[multi_max:]
             with Pool(processes=len(langs)) as pool:
                 pool.starmap(translator, zip(langs,
-                                                 repeat(driver_path),
-                                                 repeat(locale_path),
-                                                 repeat(headless),
-                                                 repeat(lang_interface),
-                                                 repeat(from_lang),
-                                                 repeat(retry)))
+                                             repeat(driver_path),
+                                             repeat(locale_path),
+                                             repeat(headless),
+                                             repeat(lang_interface),
+                                             repeat(from_lang),
+                                             repeat(retry)))
     else:
         for code in codes:
             translator(
