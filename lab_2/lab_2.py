@@ -40,7 +40,8 @@ def is_complex_translated(lines: list[str], i: int) -> bool:
             plus += 1
             if next_str.startswith('msgstr "'):
                 next_str2 = lines[i + plus]
-                return (len(next_str) > 10) or (next_str2.startswith('"') and len(next_str2) > 2)
+                return (len(next_str) > 10) or (next_str2.startswith('"')
+                                                and len(next_str2) > 2)
         except IndexError:
             return False
 
@@ -56,11 +57,13 @@ def check_translated(lines: list[str], i: int, s: str) -> bool:
     Returns: True if already translated
     """
     if s.startswith('msgid "'):
-        return is_simple_translated(lines, i, s) or is_complex_translated(lines, i)
+        return (is_simple_translated(lines, i, s) or
+                is_complex_translated(lines, i))
     return False
 
 
-def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> str:
+def translate(dr: webdriver.Chrome, text: str,
+              last_trans: str, retry: int) -> str:
     """
     This method translates received strings
     Args:
@@ -71,7 +74,8 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
 
     Returns: Translated text
     """
-    substitution, substitution2, variables, unf, service_f = "{%s}", "{+}", list(), False, False
+    substitution, substitution2, variables, unf, service_f =\
+        "{%s}", "{+}", list(), False, False
 
     # Check python unnamed-format
     if '%s' in text:
@@ -84,7 +88,8 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
         s_pos = text[f_pos:].find(')s')
         named_format = text[f_pos:][:s_pos + 2]  # + ')s'
         variables.append(named_format)
-        text = text.replace(named_format, substitution % (i + 1,), 1)
+        text = text.replace(named_format,
+                            substitution % (i + 1,), 1)
 
     # Prepare string to work
     if r'\"' in text:
@@ -107,25 +112,34 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
     def take_text() -> str:
         """
         Takes text from the output field and formats
-        NoSuchElementException thrown if the page didn't load correctly
+        NoSuchElementException thrown if the page
+         didn't load correctly
         """
         random_pause()
         try:
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
+            trans_text = dr.find_elements(
+                by=By.CSS_SELECTOR,
+                value=TranslationSelectors.OUTPUT_TEXT)
         except NoSuchElementException:
             dr.refresh()
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
+            trans_text = dr.find_elements(
+                by=By.CSS_SELECTOR,
+                value=TranslationSelectors.OUTPUT_TEXT)
 
         if not trans_text:  # Multiple translations
             # For example, in French there can be 2 translations of one word.
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT_ALT)[-1:]
+            trans_text = dr.find_elements(
+                by=By.CSS_SELECTOR,
+                value=TranslationSelectors.OUTPUT_TEXT_ALT)[-1:]
         trans_text = [sentence.text for sentence in trans_text]
         trans_text = ''.join(trans_text)
         return trans_text
 
     try:
-        dr.find_element(by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).clear()
-        dr.find_element(by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).send_keys(text)
+        dr.find_element(by=By.CSS_SELECTOR,
+                        value=TranslationSelectors.INPUT_FIELD).clear()
+        dr.find_element(by=By.CSS_SELECTOR,
+                        value=TranslationSelectors.INPUT_FIELD).send_keys(text)
         trans = take_text()
 
         if trans == last_trans:  # If GT is late
@@ -136,7 +150,8 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
         if retry:
             print(f'[!] FAIL -> {text} | retry={retry} ({ex})')
             retry -= 1
-            return translate(dr=dr, text=text, last_trans=last_trans, retry=retry)
+            return translate(dr=dr,
+                             text=text, last_trans=last_trans, retry=retry)
         else:
             print(f'[!] No attempts left for -> {text}')
             return ""
@@ -147,11 +162,13 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
 
     # Return python named-format
     for i in range(len(variables)):
-        trans = trans.replace(substitution % (i + 1,), variables[i], 1)
+        trans = trans.replace(substitution %
+                              (i + 1,), variables[i], 1)
 
     # Return html classes
     for i in range(len(classes)):
-        trans = trans.replace(substitution2, classes[i], 1)
+        trans = trans.replace(substitution2,
+                              classes[i], 1)
 
     # Fix python service str
     if service_f:
@@ -171,24 +188,30 @@ def translator(
         retry: int
 ):
     """
-    Initialization of all variables. And the translation.
+    Initialization of all variables. And
+    the translation.
     Args:
         code: Language code
         driver_path: Path to chromedriver
         locale_path: Path to locale folder
         headless: Windowless mode
-        lang_interface: Language (code) in which GT will be opened
-        from_lang: Language code from which the translation will be carried out
+        lang_interface: Language (code) in
+         which GT will be opened
+        from_lang: Language code from which
+         the translation will be carried out
         retry: Attempts to translate
 
     Returns: None
     """
-    url = 'https://translate.google.com/?hl=%(lang_interface)s&sl=%(from_lang)s&tl=%(to_lang)s&op=translate'
+    url = ('https://translate.google.com/?hl='
+           '%(lang_interface)s&sl=%(from_lang)s&tl=%(to_lang)s&op=translate')
     user_agent = UserAgent(verify_ssl=False)
     s = Service(executable_path=driver_path)
     options = webdriver.ChromeOptions()
-    options.add_argument(argument=f'user-agent={user_agent.random}')
-    options.add_argument(argument='--disable-blink-features=AutomationControlled')
+    options.add_argument(argument=f'user-agent'
+                                  f'={user_agent.random}')
+    options.add_argument(argument='--disable'
+                                  '-blink-features=AutomationControlled')
     if headless:
         options.add_argument(argument='--headless')
     dr = webdriver.Chrome(service=s, options=options)
@@ -201,9 +224,14 @@ def translator(
     # Read file
     path_file = f'{locale_path}/{code}/LC_MESSAGES/django.po'
     try:
-        with open(path_file, 'r', encoding='UTF-8') as file:
+        with (open(path_file, 'r', encoding='UTF-8') as file):
             print(f'{path_file} - opened!')
-            text, found, translated, next_complex, save_complex, last_trans = '', False, None, False, False, None
+            text = ''
+            found = False
+            translated = None
+            next_complex = False
+            save_complex = False
+            last_trans = None
             to_translate = list()
             lines = file.readlines()
     except FileNotFoundError:
@@ -221,14 +249,18 @@ def translator(
         if s.startswith('msgid "'):  # Define text for translation
             string_text = s[s.find('"') + 1:s.rfind('"')].strip()
             if string_text:  # Simple translation
-                translated, found = translate(dr=dr, text=string_text, last_trans=last_trans, retry=retry), True
+                translated, found = translate(
+                    dr=dr, text=string_text,
+                    last_trans=last_trans,
+                    retry=retry), True
                 last_trans = translated
             else:  # Complex trans
                 if lines[i + 1].startswith('"'):  # It's complex text
                     next_complex = True
             text += s
 
-        elif s.startswith('"') and next_complex and len(s) > 2:  # Complex text
+        elif (s.startswith('"') and next_complex and
+              len(s) > 2):  # Complex text
             to_translate.append(s[s.find('"') + 1:s.rfind('"')])
             text += s
             # Check next line
@@ -240,7 +272,10 @@ def translator(
 
         elif s.startswith('msgstr "') and found:  # Write translated text
             if save_complex:  # Write complex
-                solved = translate(dr=dr, text=' '.join(to_translate), last_trans=last_trans, retry=retry)
+                solved = translate(dr=dr,
+                                   text=' '.join(to_translate),
+                                   last_trans=last_trans,
+                                   retry=retry)
                 last_trans = solved
                 text += ('msgstr ""\n"' + solved + '"\n')
                 save_complex = False
@@ -280,8 +315,10 @@ def manager(codes: list,
         headless: Windowless Mode
         multi: Multiprocessor mode
         multi_max: Maximum number of processes
-        lang_interface: Language (code) in which GT will be opened
-        from_lang: Language code from which the translation will be carried out
+        lang_interface: Language (code) in which
+         GT will be opened
+        from_lang: Language code from which the
+         translation will be carried out
         retry: Attempts to translate
 
     Returns: None
@@ -302,7 +339,9 @@ def manager(codes: list,
                                              repeat(retry)))
     else:
         for code in codes:
-            translator(code, driver_path, locale_path, headless, lang_interface, from_lang, retry)
+            translator(code, driver_path, locale_path,
+                       headless, lang_interface,
+                       from_lang, retry)
 
 
 if __name__ == '__main__':
