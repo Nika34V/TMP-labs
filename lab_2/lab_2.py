@@ -16,17 +16,24 @@ class TranslationSelectors:
     INPUT_FIELD = 'textarea.er8xn'
 
 
+class PoFileConstants:
+    MSGID_PREFIX_LENGTH = len('msgid ""\n')  # 9
+    MSGSTR_PREFIX_LENGTH = len('msgstr ""\n')  # 10
+    MIN_TRANSLATED_LENGTH = 2
+
+
 def random_pause():
     sleep(round(uniform(1.8, 2.1), 2))
 
 
 def is_simple_translated(lines: list[str], i: int, s: str) -> bool:
     """Проверяет простой перевод (одна строка)"""
-    if len(s) <= 9:
+    if len(s) <= PoFileConstants.MSGID_PREFIX_LENGTH:
         return False
     try:
         next_str = lines[i + 1]
-        return next_str.startswith('msgstr "') and len(next_str) > 10
+        return (next_str.startswith('msgstr "') and
+                len(next_str) > PoFileConstants.MSGSTR_PREFIX_LENGTH)
     except IndexError:
         return False
 
@@ -41,7 +48,8 @@ def is_complex_translated(lines: list[str], i: int) -> bool:
             if next_str.startswith('msgstr "'):
                 next_str2 = lines[i + plus]
                 return ((len(next_str) > 10) or
-                        (next_str2.startswith('"') and len(next_str2) > 2))
+                        (next_str2.startswith('"') and
+                         len(next_str2) > PoFileConstants.MIN_TRANSLATED_LENGTH))
         except IndexError:
             return False
 
