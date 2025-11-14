@@ -10,6 +10,12 @@ from random import uniform
 from time import sleep
 
 
+class PoFileConstants:
+    MSGID_PREFIX_LENGTH = len('msgid ""\n')  # 9
+    MSGSTR_PREFIX_LENGTH = len('msgstr ""\n')  # 10
+    MIN_TRANSLATED_LENGTH = 2
+
+
 class TranslationSelectors:
     OUTPUT_TEXT = 'span.ryNqvb'
     OUTPUT_TEXT_ALT = 'span.HwtZe'
@@ -22,11 +28,11 @@ def random_pause():
 
 def is_simple_translated(lines: list[str], i: int, s: str) -> bool:
     """Проверяет простой перевод (одна строка)"""
-    if len(s) <= 9:
+    if len(s) <= PoFileConstants.MSGID_PREFIX_LENGTH:
         return False
     try:
         next_str = lines[i + 1]
-        return next_str.startswith('msgstr "') and len(next_str) > 10
+        return next_str.startswith('msgstr "') and len(next_str) > PoFileConstants.MSGSTR_PREFIX_LENGTH
     except IndexError:
         return False
 
@@ -40,7 +46,7 @@ def is_complex_translated(lines: list[str], i: int) -> bool:
             plus += 1
             if next_str.startswith('msgstr "'):
                 next_str2 = lines[i + plus]
-                return (len(next_str) > 10) or (next_str2.startswith('"')
+                return (len(next_str) > PoFileConstants.MSGSTR_PREFIX_LENGTH) or (next_str2.startswith('"')
                                                 and len(next_str2) > 2)
         except IndexError:
             return False
@@ -86,7 +92,7 @@ def translate(dr: webdriver.Chrome, text: str,
     for i in range(count_format):
         f_pos = text.find('%(')
         s_pos = text[f_pos:].find(')s')
-        named_format = text[f_pos:][:s_pos + 2]  # + ')s'
+        named_format = text[f_pos:][:s_pos + PoFileConstants.MIN_TRANSLATED_LENGTH]  # + ')s'
         variables.append(named_format)
         text = text.replace(named_format,
                             substitution % (i + 1,), 1)
@@ -260,7 +266,7 @@ def translator(
             text += s
 
         elif (s.startswith('"') and next_complex and
-              len(s) > 2):  # Complex text
+              len(s) > PoFileConstants.MIN_TRANSLATED_LENGTH):  # Complex text
             to_translate.append(s[s.find('"') + 1:s.rfind('"')])
             text += s
             # Check next line
