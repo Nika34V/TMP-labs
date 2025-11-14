@@ -1,3 +1,4 @@
+from httpcore import TimeoutException
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -130,7 +131,7 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
         if trans == last_trans:  # If GT is late
             trans = take_text()
 
-    except Exception as ex:
+    except (NoSuchElementException, TimeoutException) as ex:
         random_pause()
         if retry:
             print(f'[!] FAIL -> {text} | retry={retry} ({ex})')
