@@ -205,7 +205,7 @@ def translator(
     """
     url = ('https://translate.google.com/?hl='
            '%(lang_interface)s&sl=%(from_lang)s&tl=%(to_lang)s&op=translate')
-    user_agent = UserAgent(verify_ssl=False)
+    user_agent = UserAgent()
     s = Service(executable_path=driver_path)
     options = webdriver.ChromeOptions()
     options.add_argument(argument=f'user-agent'
