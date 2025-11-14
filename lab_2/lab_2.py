@@ -9,6 +9,12 @@ from random import uniform
 from time import sleep
 
 
+class TranslationSelectors:
+    OUTPUT_TEXT = 'span.ryNqvb'
+    OUTPUT_TEXT_ALT = 'span.HwtZe'
+    INPUT_FIELD = 'textarea.er8xn'
+
+
 def random_pause():
     sleep(round(uniform(1.8, 2.1), 2))
 
@@ -106,21 +112,21 @@ def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> s
         """
         random_pause()
         try:
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value='span.ryNqvb')
+            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
         except NoSuchElementException:
             dr.refresh()
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value='span.ryNqvb')
+            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT)
 
         if not trans_text:  # Multiple translations
             # For example, in French there can be 2 translations of one word.
-            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value='span.HwtZe')[-1:]
+            trans_text = dr.find_elements(by=By.CSS_SELECTOR, value=TranslationSelectors.OUTPUT_TEXT_ALT)[-1:]
         trans_text = [sentence.text for sentence in trans_text]
         trans_text = ''.join(trans_text)
         return trans_text
 
     try:
-        dr.find_element(by=By.CSS_SELECTOR, value='textarea.er8xn').clear()
-        dr.find_element(by=By.CSS_SELECTOR, value='textarea.er8xn').send_keys(text)
+        dr.find_element(by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).clear()
+        dr.find_element(by=By.CSS_SELECTOR, value=TranslationSelectors.INPUT_FIELD).send_keys(text)
         trans = take_text()
 
         if trans == last_trans:  # If GT is late
