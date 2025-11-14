@@ -293,13 +293,13 @@ def manager(codes: list,
             langs = variables_copy[:multi_max]
             variables_copy = variables_copy[multi_max:]
             with Pool(processes=len(langs)) as pool:
-                start = pool.starmap(translator, zip(langs,
-                                                     repeat(driver_path),
-                                                     repeat(locale_path),
-                                                     repeat(headless),
-                                                     repeat(lang_interface),
-                                                     repeat(from_lang),
-                                                     repeat(retry)))
+                pool.starmap(translator, zip(langs,
+                                             repeat(driver_path),
+                                             repeat(locale_path),
+                                             repeat(headless),
+                                             repeat(lang_interface),
+                                             repeat(from_lang),
+                                             repeat(retry)))
     else:
         for code in codes:
             translator(code, driver_path, locale_path, headless, lang_interface, from_lang, retry)
