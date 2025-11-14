@@ -19,6 +19,31 @@ def random_pause():
     sleep(round(uniform(1.8, 2.1), 2))
 
 
+def is_simple_translated(lines: list[str], i: int, s: str) -> bool:
+    """Проверяет простой перевод (одна строка)"""
+    if len(s) <= 9:
+        return False
+    try:
+        next_str = lines[i + 1]
+        return next_str.startswith('msgstr "') and len(next_str) > 10
+    except IndexError:
+        return False
+
+
+def is_complex_translated(lines: list[str], i: int) -> bool:
+    """Проверяет сложный перевод (многострочный)"""
+    plus = 1
+    while True:
+        try:
+            next_str = lines[i + plus]
+            plus += 1
+            if next_str.startswith('msgstr "'):
+                next_str2 = lines[i + plus]
+                return (len(next_str) > 10) or (next_str2.startswith('"') and len(next_str2) > 2)
+        except IndexError:
+            return False
+
+
 def check_translated(lines: list[str], i: int, s: str) -> bool:
     """
     The method checks if the strings are translated
@@ -30,35 +55,8 @@ def check_translated(lines: list[str], i: int, s: str) -> bool:
     Returns: True if already translated
     """
     if s.startswith('msgid "'):
-        # length (msgid ""\n) is 9
-        # One-line - Simple string
-        if len(s) > 9:
-            try:
-                next_str = lines[i + 1]
-                if next_str.startswith('msgstr "') and len(next_str) > 10:
-                    return True  # Simple translated string
-            except IndexError:
-                pass
-
-        # More than one line - Complex string
-        elif len(s) == 9:
-            try:
-                plus = 1
-                while True:
-                    next_str = lines[i + plus]
-                    plus += 1
-                    # length (msgstr ""\n) is 10
-                    if next_str.startswith('msgstr "'):
-                        next_str2 = lines[i + plus]
-                        if (len(next_str) > 10) or (next_str2.startswith('"') and len(next_str2) > 2):
-                            # Complex translated string
-                            return True
-                        return False
-            except IndexError:
-                pass
-
-        # Isn't translated
-        return False
+        return is_simple_translated(lines, i, s) or is_complex_translated(lines, i)
+    return False
 
 
 def translate(dr: webdriver.Chrome, text: str, last_trans: str, retry: int) -> str:
