@@ -1,0 +1,425 @@
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :329  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :330  | РАСШИРЕННЫЙ ЛОГГЕР ИНИЦИАЛИЗИРОВАН
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :331  | Имя: api_format_checker
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :332  | Уровень: DEBUG
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :333  | Обработчики: 5
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :334  | Основной лог: logs\api_checker.log
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :335  | Лог ошибок: logs\errors.log
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :336  | JSON лог: logs\structured.json
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :337  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :946  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :947  | СКРИПТ ЗАПУЩЕН НАПРЯМУЮ
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :948  | Аргументы командной строки: ['format.py', 'test_api.md']
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :949  | Рабочая директория: C:\Users\nikav\Desktop\ТМП\TMP-labs\lab_5
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :950  | Пользователь: nikav
+2025-12-06 01:12:18 | api_format_checker                  | DEBUG    | format          | <module>                 :951  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | <module>                 :960  | Целевой файл: test_api.md
+2025-12-06 01:12:18 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: main_program_execution
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :814  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :815  | ЗАПУСК ПРОГРАММЫ ПРОВЕРКИ API-ЛИСТА
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :816  | Файл: test_api.md
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :817  | Время: 2025-12-06 01:12:18
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :818  | PID: 31008
+2025-12-06 01:12:18 | api_format_checker                  | INFO     | format          | main                     :819  | ====================================================================================================
+2025-12-06 01:12:18 | api_format_checker.errors           | CRITICAL | logger_config   | critical                 :56   | Файл не найден: test_api.md
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :329  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :330  | РАСШИРЕННЫЙ ЛОГГЕР ИНИЦИАЛИЗИРОВАН
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :331  | Имя: api_format_checker
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :332  | Уровень: DEBUG
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :333  | Обработчики: 5
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :334  | Основной лог: logs\api_checker.log
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :335  | Лог ошибок: logs\errors.log
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :336  | JSON лог: logs\structured.json
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | logger_config   | setup_logger             :337  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :946  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :947  | СКРИПТ ЗАПУЩЕН НАПРЯМУЮ
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :948  | Аргументы командной строки: ['format.py', 'test_api_list.md']
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :949  | Рабочая директория: C:\Users\nikav\Desktop\ТМП\TMP-labs\lab_5
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :950  | Пользователь: nikav
+2025-12-06 01:13:02 | api_format_checker                  | DEBUG    | format          | <module>                 :951  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | <module>                 :960  | Целевой файл: test_api_list.md
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: main_program_execution
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :814  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :815  | ЗАПУСК ПРОГРАММЫ ПРОВЕРКИ API-ЛИСТА
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :816  | Файл: test_api_list.md
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :817  | Время: 2025-12-06 01:13:02
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :818  | PID: 12992
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | main                     :819  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   | ИНФОРМАЦИЯ О ФАЙЛЕ:
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Размер: 1016 байт (1.0 KB)
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Путь: C:\Users\nikav\Desktop\ТМП\TMP-labs\lab_5\test_api_list.md
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Время изменения: 2025-12-06 00:04:19
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: analyze_file_content
+2025-12-06 01:13:02 | api_format_checker.validation       | INFO     | logger_config   | info                     :44   | Анализ содержимого файла
+2025-12-06 01:13:02 | api_format_checker.validation       | INFO     | logger_config   | info                     :44   | Анализ завершен: 25 строк, 0 категорий
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Распределение по типам строк: {'main_header': 1, 'section_header': 4, 'index_entry': 3, 'table_row': 10, 'table_separator': 3}
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: analyze_file_content (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: analyze_file_content_time = 3.673553466796875ms
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   | СТАТИСТИКА ФАЙЛА:
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Всего строк: 25
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Непустых строк: 21 (84.0%)
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Категорий: 0
+2025-12-06 01:13:02 | api_format_checker.statistics       | INFO     | logger_config   | info                     :44   |   Строк с API: 10
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_file_format
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | check_file_format        :604  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | check_file_format        :605  | НАЧАЛО ПРОВЕРКИ ФОРМАТА ФАЙЛА
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | check_file_format        :606  | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker                  | INFO     | format          | check_file_format        :625  | Начало проверки отдельных записей API
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 9
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 9
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 9: Title syntax should be "[TITLE](LINK)"
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.578258514404297ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 9
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 9: description is very short (11 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 9 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 3.1430721282958984ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 9
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 9: auth value is not enclosed with `backticks`
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 9: Auth is not a valid Auth option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 2.2993087768554688ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 9
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 9: HTTPS is not a valid HTTPS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 2.1390914916992188ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 9
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 9: CORS is not a valid CORS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 3.003835678100586ms
+2025-12-06 01:13:02 | api_format_checker.validation       | WARNING  | logger_config   | warning                  :48   | Найдено 5 ошибок в записи на строке 9
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 23.576021194458008ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 11
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 11
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'Cat Facts'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'Cat Facts'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 11 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.714872360229492ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 11
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 11: description is very short (15 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 11 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 3.9391517639160156ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 11
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 11 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 2.0792484283447266ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 11
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 11 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.0933876037597656ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 11
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 11 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 1.7592906951904297ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 11 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.03 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 25.669574737548828ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 12
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 12
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'Dog API'
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 12: Title should not end with "... API". Every entry is an API here!
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 1.9452571868896484ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 12
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 12: description is very short (17 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 12 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 2.2683143615722656ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 12
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 12 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 1.3194084167480469ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 12
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 12 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.2366771697998047ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 12
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 12 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 1.6083717346191406ms
+2025-12-06 01:13:02 | api_format_checker.validation       | WARNING  | logger_config   | warning                  :48   | Найдено 1 ошибок в записи на строке 12
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 19.12236213684082ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 13
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 13
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'PlaceBear'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'PlaceBear'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 13 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 1.2009143829345703ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 13
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 13 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 1.508474349975586ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 13
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 13 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 1.4040470123291016ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 13
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 13 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.0142326354980469ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 13
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 13 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 1.5482902526855469ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 13 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 16.80302619934082ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 16
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 16
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 16: Title syntax should be "[TITLE](LINK)"
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.332925796508789ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 16
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 16: description is very short (11 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 16 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 2.3343563079833984ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 16
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 16: auth value is not enclosed with `backticks`
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 16: Auth is not a valid Auth option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 4.756450653076172ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 16
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 16: HTTPS is not a valid HTTPS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 2.2308826446533203ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 16
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 16: CORS is not a valid CORS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 2.0728111267089844ms
+2025-12-06 01:13:02 | api_format_checker.validation       | WARNING  | logger_config   | warning                  :48   | Найдено 5 ошибок в записи на строке 16
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.04 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 40.72237014770508ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 18
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 18
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'AniList'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'AniList'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 18 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.207517623901367ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 18
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 18 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 1.4219284057617188ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 18
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 18 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 1.1315345764160156ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 18
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 18 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.6567707061767578ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 18
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 18 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 1.5437602996826172ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 18 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 19.320249557495117ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 19
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 19
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'Jikan'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'Jikan'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 19 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 1.535177230834961ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 19
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 19 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 1.3172626495361328ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 19
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 19 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 1.111745834350586ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 19
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 19 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 2.210378646850586ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 19
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 19 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 1.1186599731445312ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 19 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 16.631126403808594ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 22
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 22
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 22: Title syntax should be "[TITLE](LINK)"
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.220630645751953ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 22
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 22: description is very short (11 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 22 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 2.6285648345947266ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 22
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 22: auth value is not enclosed with `backticks`
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 22: Auth is not a valid Auth option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 4.187583923339844ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 22
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 22: HTTPS is not a valid HTTPS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 2.0477771759033203ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 22
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Validation error at line 22: CORS is not a valid CORS option
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 3.21197509765625ms
+2025-12-06 01:13:02 | api_format_checker.validation       | WARNING  | logger_config   | warning                  :48   | Найдено 5 ошибок в записи на строке 22
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.03 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 28.50198745727539ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 24
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 24
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'Clearbit'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'Clearbit'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 24 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 2.3949146270751953ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 24
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 24 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 1.373291015625ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 24
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 24 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 2.4385452270507812ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 24
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 24 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.7292499542236328ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 24
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 24 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 0.9863376617431641ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 24 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 18.827199935913086ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_entry
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Начало проверки записи на строке 25
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_title
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка заголовка на строке 25
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Извлечён заголовок: 'Hunter'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок корректен: 'Hunter'
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Заголовок на строке 25 прошёл проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_title (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_title_time = 1.283407211303711ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_description
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка описания на строке 25
+2025-12-06 01:13:02 | api_format_checker.errors           | WARNING  | logger_config   | warning                  :48   | Validation warning at line 25: description is very short (12 characters)
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Описание на строке 25 прошло проверку
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_description (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_description_time = 3.023862838745117ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_auth
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка аутентификации на строке 25
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Аутентификация на строке 25 корректна
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_auth (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_auth_time = 1.8253326416015625ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_https
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка HTTPS на строке 25
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | HTTPS на строке 25 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_https (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_https_time = 1.3768672943115234ms
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Начало операции: check_cors
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Проверка CORS на строке 25
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | CORS на строке 25 корректен
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_cors (0.00 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_cors_time = 0.9162425994873047ms
+2025-12-06 01:13:02 | api_format_checker.validation       | DEBUG    | logger_config   | debug                    :40   | Запись на строке 25 прошла все проверки успешно
+2025-12-06 01:13:02 | api_format_checker.format_checker   | INFO     | logger_config   | info                     :44   | Операция завершена успешно: check_entry (0.02 сек)
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_entry_time = 18.918752670288086ms
+2025-12-06 01:13:02 | api_format_checker.validation       | INFO     | logger_config   | info                     :44   | Проверено 10 записей...
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | СВОДКА ПО ОШИБКАМ ВАЛИДАЦИИ
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Всего ошибок: 22
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Время сбора: 0.25 сек
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Ошибок в секунду: 89.0
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Распределение по степени серьезности:
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   error     :   16 ( 72.7%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   warning   :    6 ( 27.3%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Типы ошибок:
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   description_too_short         :    6 ( 27.3%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   title_syntax                  :    3 ( 13.6%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   auth_backticks                :    3 ( 13.6%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   auth_invalid_value            :    3 ( 13.6%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   https_invalid_value           :    3 ( 13.6%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   cors_invalid_value            :    3 ( 13.6%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   title_ending                  :    1 (  4.5%)
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | Ошибки по полям:
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   auth           :    6 ошибок
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - auth_backticks           :   3
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - auth_invalid_value       :   3
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   cors           :    3 ошибок
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - cors_invalid_value       :   3
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   description    :    6 ошибок
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - description_too_short    :   6
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   https          :    3 ошибок
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - https_invalid_value      :   3
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |   title          :    4 ошибок
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - title_syntax             :   3
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   |     - title_ending             :   1
+2025-12-06 01:13:02 | api_format_checker.errors           | INFO     | logger_config   | info                     :44   | ====================================================================================================
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Ошибка в операции: check_file_format (0.28 сек)
+2025-12-06 01:13:02 | api_format_checker.errors           | ERROR    | logger_config   | error                    :52   | Exception: NameError - name 'Path' is not defined
+2025-12-06 01:13:02 | api_format_checker.performance      | INFO     | logger_config   | info                     :44   | Performance: check_file_format_error = 1count
+2025-12-06 01:13:02 | api_format_checker.errors           | CRITICAL | logger_config   | critical                 :56   | Exception: NameError - name 'Path' is not defined

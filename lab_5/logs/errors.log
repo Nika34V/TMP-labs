@@ -1,0 +1,30 @@
+[01:12:18] CRITICAL in logger_config.critical:56 - Файл не найден: test_api.md
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 9: Title syntax should be "[TITLE](LINK)"
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 9: description is very short (11 characters)
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 9: auth value is not enclosed with `backticks`
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 9: Auth is not a valid Auth option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 9: HTTPS is not a valid HTTPS option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 9: CORS is not a valid CORS option
+[01:13:02] WARNING in logger_config.warning:48 - Найдено 5 ошибок в записи на строке 9
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 11: description is very short (15 characters)
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 12: Title should not end with "... API". Every entry is an API here!
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 12: description is very short (17 characters)
+[01:13:02] WARNING in logger_config.warning:48 - Найдено 1 ошибок в записи на строке 12
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 16: Title syntax should be "[TITLE](LINK)"
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 16: description is very short (11 characters)
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 16: auth value is not enclosed with `backticks`
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 16: Auth is not a valid Auth option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 16: HTTPS is not a valid HTTPS option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 16: CORS is not a valid CORS option
+[01:13:02] WARNING in logger_config.warning:48 - Найдено 5 ошибок в записи на строке 16
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 22: Title syntax should be "[TITLE](LINK)"
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 22: description is very short (11 characters)
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 22: auth value is not enclosed with `backticks`
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 22: Auth is not a valid Auth option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 22: HTTPS is not a valid HTTPS option
+[01:13:02] ERROR in logger_config.error:52 - Validation error at line 22: CORS is not a valid CORS option
+[01:13:02] WARNING in logger_config.warning:48 - Найдено 5 ошибок в записи на строке 22
+[01:13:02] WARNING in logger_config.warning:48 - Validation warning at line 25: description is very short (12 characters)
+[01:13:02] ERROR in logger_config.error:52 - Ошибка в операции: check_file_format (0.28 сек)
+[01:13:02] ERROR in logger_config.error:52 - Exception: NameError - name 'Path' is not defined
+[01:13:02] CRITICAL in logger_config.critical:56 - Exception: NameError - name 'Path' is not defined
