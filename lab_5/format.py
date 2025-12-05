@@ -5,6 +5,12 @@ import sys
 from string import punctuation
 from typing import List, Tuple, Dict
 
+# Импорт модуля логирования
+from logger_config import logger, get_module_logger
+
+# Получаем логгер для текущего модуля
+module_logger = get_module_logger("format_checker")
+
 # Temporary replacement
 # The descriptions that contain () at the end must adapt to the new policy later
 punctuation = punctuation.replace('()', '')
@@ -40,6 +46,7 @@ def error_message(line_number: int, message: str) -> str:
 
 
 def get_categories_content(contents: List[str]) -> Tuple[Categories, CategoriesLineNumber]:
+    module_logger.debug("Начало извлечения категорий из содержимого файла")
 
     categories = {}
     category_line_num = {}
@@ -61,13 +68,15 @@ def get_categories_content(contents: List[str]) -> Tuple[Categories, CategoriesL
 
         title_match = link_re.match(raw_title)
         if title_match:
-                title = title_match.group(1).upper()
-                categories[category].append(title)
+            title = title_match.group(1).upper()
+            categories[category].append(title)
 
+    module_logger.debug(f"Извлечено {len(categories)} категорий")
     return (categories, category_line_num)
 
 
 def check_alphabetical_order(lines: List[str]) -> List[str]:
+    module_logger.debug("Проверка алфавитного порядка категорий")
 
     err_msgs = []
 
@@ -76,16 +85,21 @@ def check_alphabetical_order(lines: List[str]) -> List[str]:
     for category, api_list in categories.items():
         if sorted(api_list) != api_list:
             err_msg = error_message(
-                category_line_num[category], 
+                category_line_num[category],
                 f'{category} category is not alphabetical order'
             )
             err_msgs.append(err_msg)
-    
+            module_logger.warning(f"Категория '{category}' не в алфавитном порядке")
+
+    if err_msgs:
+        module_logger.info(f"Найдено {len(err_msgs)} ошибок алфавитного порядка")
+    else:
+        module_logger.debug("Все категории в алфавитном порядке")
+
     return err_msgs
 
 
 def check_title(line_num: int, raw_title: str) -> List[str]:
-
     err_msgs = []
 
     title_match = link_re.match(raw_title)
@@ -105,7 +119,6 @@ def check_title(line_num: int, raw_title: str) -> List[str]:
 
 
 def check_description(line_num: int, description: str) -> List[str]:
-
     err_msgs = []
 
     first_char = description[0]
@@ -120,14 +133,14 @@ def check_description(line_num: int, description: str) -> List[str]:
 
     desc_length = len(description)
     if desc_length > max_description_length:
-        err_msg = error_message(line_num, f'description should not exceed {max_description_length} characters (currently {desc_length})')
+        err_msg = error_message(line_num,
+                                f'description should not exceed {max_description_length} characters (currently {desc_length})')
         err_msgs.append(err_msg)
-    
+
     return err_msgs
 
 
 def check_auth(line_num: int, auth: str) -> List[str]:
-
     err_msgs = []
 
     backtick = '`'
@@ -138,12 +151,11 @@ def check_auth(line_num: int, auth: str) -> List[str]:
     if auth.replace(backtick, '') not in auth_keys:
         err_msg = error_message(line_num, f'{auth} is not a valid Auth option')
         err_msgs.append(err_msg)
-    
+
     return err_msgs
 
 
 def check_https(line_num: int, https: str) -> List[str]:
-
     err_msgs = []
 
     if https not in https_keys:
@@ -154,18 +166,16 @@ def check_https(line_num: int, https: str) -> List[str]:
 
 
 def check_cors(line_num: int, cors: str) -> List[str]:
-
     err_msgs = []
 
     if cors not in cors_keys:
         err_msg = error_message(line_num, f'{cors} is not a valid CORS option')
         err_msgs.append(err_msg)
-    
+
     return err_msgs
 
 
 def check_entry(line_num: int, segments: List[str]) -> List[str]:
-
     raw_title = segments[index_title]
     description = segments[index_desc]
     auth = segments[index_auth]
@@ -190,6 +200,7 @@ def check_entry(line_num: int, segments: List[str]) -> List[str]:
 
 
 def check_file_format(lines: List[str]) -> List[str]:
+    module_logger.info(f"Начало проверки формата файла ({len(lines)} строк)")
 
     err_msgs = []
     category_title_in_index = []
@@ -212,14 +223,16 @@ def check_file_format(lines: List[str]) -> List[str]:
             category_match = anchor_re.match(line_content)
             if category_match:
                 if category_match.group(1) not in category_title_in_index:
-                    err_msg = error_message(line_num, f'category header ({category_match.group(1)}) not added to Index section')
+                    err_msg = error_message(line_num,
+                                            f'category header ({category_match.group(1)}) not added to Index section')
                     err_msgs.append(err_msg)
             else:
                 err_msg = error_message(line_num, 'category header is not formatted correctly')
                 err_msgs.append(err_msg)
 
             if num_in_category < min_entries_per_category:
-                err_msg = error_message(category_line, f'{category} category does not have the minimum {min_entries_per_category} entries (only has {num_in_category})')
+                err_msg = error_message(category_line,
+                                        f'{category} category does not have the minimum {min_entries_per_category} entries (only has {num_in_category})')
                 err_msgs.append(err_msg)
 
             category = line_content.split(' ')[1]
@@ -234,44 +247,70 @@ def check_file_format(lines: List[str]) -> List[str]:
         num_in_category += 1
         segments = line_content.split('|')[1:-1]
         if len(segments) < num_segments:
-            err_msg = error_message(line_num, f'entry does not have all the required columns (have {len(segments)}, need {num_segments})')
+            err_msg = error_message(line_num,
+                                    f'entry does not have all the required columns (have {len(segments)}, need {num_segments})')
             err_msgs.append(err_msg)
             continue
-    
+
         for segment in segments:
             # every line segment should start and end with exactly 1 space
             if len(segment) - len(segment.lstrip()) != 1 or len(segment) - len(segment.rstrip()) != 1:
                 err_msg = error_message(line_num, 'each segment must start and end with exactly 1 space')
                 err_msgs.append(err_msg)
-        
+
         segments = [segment.strip() for segment in segments]
         entry_err_msgs = check_entry(line_num, segments)
         err_msgs.extend(entry_err_msgs)
-    
+
+    module_logger.info(f"Проверка завершена. Найдено {len(err_msgs)} ошибок")
     return err_msgs
 
 
 def main(filename: str) -> None:
+    module_logger.info(f"Запуск проверки файла: {filename}")
 
-    with open(filename, mode='r', encoding='utf-8') as file:
-        lines = list(line.rstrip() for line in file)
+    try:
+        with open(filename, mode='r', encoding='utf-8') as file:
+            lines = list(line.rstrip() for line in file)
 
-    file_format_err_msgs = check_file_format(lines)
+        module_logger.debug(f"Файл успешно загружен: {len(lines)} строк")
 
-    if file_format_err_msgs:
-        for err_msg in file_format_err_msgs:
-            print(err_msg)
+        file_format_err_msgs = check_file_format(lines)
+
+        if file_format_err_msgs:
+            for err_msg in file_format_err_msgs:
+                print(err_msg)
+                module_logger.error(err_msg)
+
+            module_logger.error(f"Проверка завершилась с ошибками: {len(file_format_err_msgs)} ошибок")
+            sys.exit(1)
+        else:
+            module_logger.info("Проверка успешно завершена. Ошибок не найдено.")
+
+    except FileNotFoundError:
+        error_msg = f"Файл не найден: {filename}"
+        module_logger.critical(error_msg)
+        print(error_msg)
+        sys.exit(1)
+    except Exception as e:
+        error_msg = f"Неожиданная ошибка: {str(e)}"
+        module_logger.critical(error_msg, exc_info=True)
+        print(error_msg)
         sys.exit(1)
 
 
 if __name__ == '__main__':
+    module_logger.debug("Скрипт запущен напрямую")
 
     num_args = len(sys.argv)
 
     if num_args < 2:
-        print('No .md file passed (file should contain Markdown table syntax)')
+        error_msg = 'No .md file passed (file should contain Markdown table syntax)'
+        module_logger.error(error_msg)
+        print(error_msg)
         sys.exit(1)
 
     filename = sys.argv[1]
+    module_logger.debug(f"Аргументы командной строки: {sys.argv}")
 
     main(filename)
