@@ -28,12 +28,12 @@ def setup_logger(name: str = "api_format_checker") -> logging.Logger:
 
     # Формат для логов
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        '%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
     console_formatter = logging.Formatter(
-        '%(levelname)-8s %(message)s'
+        '%(levelname)-8s [%(module)s] %(message)s'
     )
 
     # 1. Обработчик для консоли (только INFO и выше)
@@ -59,6 +59,7 @@ def setup_logger(name: str = "api_format_checker") -> logging.Logger:
     # Логируем создание логгера
     logger.debug(f"Логгер '{name}' инициализирован")
     logger.debug(f"Файл логов: {log_filename}")
+    logger.debug(f"Уровень логирования: DEBUG для файла, INFO для консоли")
 
     return logger
 
@@ -73,7 +74,10 @@ def get_module_logger(module_name: str) -> logging.Logger:
     Returns:
         Логгер с именем модуля
     """
-    return logging.getLogger(f"api_format_checker.{module_name}")
+    logger_name = f"api_format_checker.{module_name}"
+    logger = logging.getLogger(logger_name)
+    logger.debug(f"Создан логгер для модуля: {module_name}")
+    return logger
 
 
 # Глобальный логгер для импорта
