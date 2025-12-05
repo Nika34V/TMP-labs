@@ -1,19 +1,201 @@
 # -*- coding: utf-8 -*-
 """
-Конфигурация логирования для проверки формата API-листа
+Расширенная конфигурация логирования для проверки формата API-листа
 """
 
 import logging
 import sys
 import json
+import traceback
 from pathlib import Path
 from datetime import datetime
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+from typing import Dict, Any, Optional
+
+
+class StructuredLogger:
+    """Класс для структурированного логирования с дополнительными метаданными"""
+
+    def __init__(self, name: str):
+        self.logger = logging.getLogger(name)
+        self.context = {}
+
+    def add_context(self, **kwargs):
+        """Добавляет контекстную информацию к логам"""
+        self.context.update(kwargs)
+
+    def clear_context(self):
+        """Очищает контекстную информацию"""
+        self.context.clear()
+
+    def _prepare_extra(self, extra: Optional[Dict] = None) -> Dict:
+        """Подготавливает дополнительные данные для логирования"""
+        result = {'context': self.context.copy()}
+        if extra:
+            result.update(extra)
+        return result
+
+    def debug(self, msg: str, extra: Optional[Dict] = None, exc_info: bool = False):
+        """Логирование уровня DEBUG"""
+        self.logger.debug(msg, extra=self._prepare_extra(extra), exc_info=exc_info)
+
+    def info(self, msg: str, extra: Optional[Dict] = None, exc_info: bool = False):
+        """Логирование уровня INFO"""
+        self.logger.info(msg, extra=self._prepare_extra(extra), exc_info=exc_info)
+
+    def warning(self, msg: str, extra: Optional[Dict] = None, exc_info: bool = False):
+        """Логирование уровня WARNING"""
+        self.logger.warning(msg, extra=self._prepare_extra(extra), exc_info=exc_info)
+
+    def error(self, msg: str, extra: Optional[Dict] = None, exc_info: bool = False):
+        """Логирование уровня ERROR"""
+        self.logger.error(msg, extra=self._prepare_extra(extra), exc_info=exc_info)
+
+    def critical(self, msg: str, extra: Optional[Dict] = None, exc_info: bool = False):
+        """Логирование уровня CRITICAL"""
+        self.logger.critical(msg, extra=self._prepare_extra(extra), exc_info=exc_info)
+
+    def exception(self, msg: str, extra: Optional[Dict] = None):
+        """Логирование исключения с traceback"""
+        self.logger.error(msg, extra=self._prepare_extra(extra), exc_info=True)
+
+    def log_validation_error(self, error_type: str, details: Dict, severity: str = "error"):
+        """Специализированное логирование ошибок валидации"""
+        extra = {
+            'error_type': error_type,
+            'validation_details': details,
+            'severity': severity,
+            'timestamp': datetime.now().isoformat()
+        }
+
+        level_map = {
+            'debug': logging.DEBUG,
+            'info': logging.INFO,
+            'warning': logging.WARNING,
+            'error': logging.ERROR,
+            'critical': logging.CRITICAL
+        }
+
+        level = level_map.get(severity, logging.ERROR)
+        message = f"Validation {severity.upper()}: {error_type} - {details.get('message', '')}"
+
+        self.logger.log(level, message, extra=self._prepare_extra(extra))
+
+    def log_performance_metric(self, metric_name: str, value: float, unit: str = "ms"):
+        """Логирование метрик производительности"""
+        extra = {
+            'metric_name': metric_name,
+            'metric_value': value,
+            'metric_unit': unit,
+            'is_performance_metric': True
+        }
+        self.info(f"Performance: {metric_name} = {value}{unit}", extra=extra)
+
+
+class ErrorTrackingHandler(logging.Handler):
+    """Специальный обработчик для отслеживания ошибок"""
+
+    def __init__(self):
+        super().__init__()
+        self.error_counts = {}
+        self.error_details = []
+        self.setLevel(logging.WARNING)
+
+    def emit(self, record):
+        try:
+            # Подсчитываем ошибки по типам
+            error_type = getattr(record, 'error_type', 'unknown')
+            self.error_counts[error_type] = self.error_counts.get(error_type, 0) + 1
+
+            # Сохраняем детали ошибки
+            error_detail = {
+                'timestamp': datetime.now().isoformat(),
+                'level': record.levelname,
+                'message': record.getMessage(),
+                'type': error_type,
+                'module': record.module,
+                'function': record.funcName,
+                'line': record.lineno
+            }
+
+            # Добавляем дополнительную информацию из extra
+            if hasattr(record, 'validation_details'):
+                error_detail['validation_details'] = record.validation_details
+            if hasattr(record, 'context'):
+                error_detail['context'] = record.context
+
+            self.error_details.append(error_detail)
+
+            # Ограничиваем размер истории ошибок
+            if len(self.error_details) > 100:
+                self.error_details = self.error_details[-50:]
+
+        except Exception:
+            self.handleError(record)
+
+    def get_error_summary(self) -> Dict:
+        """Возвращает сводку по ошибкам"""
+        return {
+            'total_errors': sum(self.error_counts.values()),
+            'error_counts': dict(self.error_counts),
+            'recent_errors': self.error_details[-10:] if self.error_details else []
+        }
+
+    def clear_errors(self):
+        """Очищает историю ошибок"""
+        self.error_counts.clear()
+        self.error_details.clear()
+
+
+class ExceptionLogger:
+    """Класс для централизованного логирования исключений"""
+
+    def __init__(self, logger: StructuredLogger):
+        self.logger = logger
+        self.exception_counts = {}
+
+    def log_exception(self, exception: Exception, context: Optional[Dict] = None,
+                      level: str = "error") -> Dict:
+        """
+        Логирует исключение с полной информацией
+
+        Returns:
+            Словарь с информацией об исключении
+        """
+        exc_type = type(exception).__name__
+        self.exception_counts[exc_type] = self.exception_counts.get(exc_type, 0) + 1
+
+        exc_info = {
+            'type': exc_type,
+            'message': str(exception),
+            'traceback': traceback.format_exc(),
+            'timestamp': datetime.now().isoformat(),
+            'count': self.exception_counts[exc_type]
+        }
+
+        if context:
+            exc_info['context'] = context
+
+        # Логируем в зависимости от уровня
+        log_method = getattr(self.logger, level)
+        log_method(f"Exception: {exc_type} - {str(exception)}",
+                   extra={'exception_info': exc_info})
+
+        return exc_info
+
+    def get_exception_stats(self) -> Dict:
+        """Возвращает статистику по исключениям"""
+        return {
+            'total_exceptions': sum(self.exception_counts.values()),
+            'exception_counts': dict(self.exception_counts),
+            'most_common': max(self.exception_counts.items(), key=lambda x: x[1])
+            if self.exception_counts else ('none', 0)
+        }
 
 
 def setup_logger(name: str = "api_format_checker") -> logging.Logger:
     """
-    Настройка и возврат логгера
+    Настройка и возврат логгера с обработчиками ошибок
 
     Args:
         name: Имя логгера
@@ -23,213 +205,192 @@ def setup_logger(name: str = "api_format_checker") -> logging.Logger:
     """
     # Создаём логгер
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)  # Ловим все сообщения
-
-    # Очищаем существующие обработчики (чтобы не дублировались)
+    logger.setLevel(logging.DEBUG)
     logger.handlers.clear()
+    logger.propagate = False
 
     # Форматы для разных обработчиков
     detailed_formatter = logging.Formatter(
-        '%(asctime)s | %(name)-30s | %(levelname)-8s | %(funcName)-25s:%(lineno)-4d | %(message)s',
+        '%(asctime)s | %(name)-35s | %(levelname)-8s | %(module)-15s | %(funcName)-25s:%(lineno)-4d | %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
     console_formatter = logging.Formatter(
-        '%(levelname)-8s | %(module_short)-15s | %(message)s'
+        '%(levelname)-8s | %(module_short)-20s | %(message)s'
     )
 
-    json_formatter = logging.Formatter(
-        '%(asctime)s | %(name)s | %(levelname)s | %(funcName)s:%(lineno)d | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+    error_formatter = logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s:%(lineno)d - %(message)s',
+        datefmt='%H:%M:%S'
     )
 
-    # 1. Обработчик для консоли (только INFO и выше)
+    # 1. Обработчик для консоли
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(console_formatter)
 
-    # 2. Обработчик для основного файла с ротацией по размеру
+    # 2. Основной файловый обработчик
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
-    main_log_filename = log_dir / "api_checker_main.log"
-
-    main_file_handler = RotatingFileHandler(
-        main_log_filename,
-        maxBytes=2 * 1024 * 1024,  # 2MB
+    main_log = log_dir / "api_checker.log"
+    main_handler = RotatingFileHandler(
+        main_log,
+        maxBytes=5 * 1024 * 1024,  # 5MB
         backupCount=10,
         encoding='utf-8'
     )
-    main_file_handler.setLevel(logging.DEBUG)
-    main_file_handler.setFormatter(detailed_formatter)
+    main_handler.setLevel(logging.DEBUG)
+    main_handler.setFormatter(detailed_formatter)
 
-    # 3. Обработчик для ошибок с ротацией по времени
-    error_log_filename = log_dir / "api_checker_errors.log"
-
-    error_file_handler = TimedRotatingFileHandler(
-        error_log_filename,
-        when='midnight',  # Ротация в полночь
+    # 3. Обработчик для ошибок (отдельный файл)
+    error_log = log_dir / "errors.log"
+    error_handler = TimedRotatingFileHandler(
+        error_log,
+        when='midnight',
         interval=1,
-        backupCount=7,  # Храним 7 дней
+        backupCount=14,  # 2 недели
         encoding='utf-8'
     )
-    error_file_handler.setLevel(logging.WARNING)
-    error_file_handler.setFormatter(detailed_formatter)
+    error_handler.setLevel(logging.WARNING)
+    error_handler.setFormatter(error_formatter)
 
-    # 4. Обработчик для JSON логов (машинно-читаемый формат)
-    json_log_filename = log_dir / "api_checker_validation.json"
+    # 4. Обработчик для отслеживания ошибок
+    error_tracker = ErrorTrackingHandler()
 
-    class JsonLogHandler(logging.FileHandler):
-        """Обработчик для записи логов в JSON формате"""
+    # 5. JSON обработчик для структурированных данных
+    json_log = log_dir / "structured.json"
 
-        def emit(self, record):
-            try:
-                log_entry = {
-                    'timestamp': datetime.now().isoformat(),
-                    'logger': record.name,
-                    'level': record.levelname,
-                    'module': record.module,
-                    'function': record.funcName,
-                    'line': record.lineno,
-                    'message': record.getMessage(),
-                    'process': record.process,
-                    'thread': record.threadName
+    class JSONFormatter(logging.Formatter):
+        def format(self, record):
+            log_record = {
+                'timestamp': datetime.now().isoformat(),
+                'level': record.levelname,
+                'logger': record.name,
+                'module': record.module,
+                'function': record.funcName,
+                'line': record.lineno,
+                'message': record.getMessage(),
+                'process': record.process,
+                'thread': record.threadName
+            }
+
+            # Добавляем дополнительные поля из extra
+            for key, value in record.__dict__.items():
+                if key.startswith('_') or key in ['args', 'created', 'exc_info',
+                                                  'exc_text', 'filename', 'levelno',
+                                                  'lineno', 'module', 'msecs', 'msg',
+                                                  'name', 'pathname', 'process',
+                                                  'relativeCreated', 'thread',
+                                                  'threadName']:
+                    continue
+
+                if key not in log_record and value is not None:
+                    # Сериализуем специальные типы
+                    if hasattr(value, '__dict__'):
+                        log_record[key] = str(value)
+                    else:
+                        log_record[key] = value
+
+            # Добавляем traceback для исключений
+            if record.exc_info:
+                log_record['exception'] = {
+                    'type': str(record.exc_info[0].__name__),
+                    'message': str(record.exc_info[1]),
+                    'traceback': self.formatException(record.exc_info)
                 }
 
-                # Добавляем дополнительные поля, если есть
-                if hasattr(record, 'validation_data'):
-                    log_entry['validation_data'] = record.validation_data
-                if hasattr(record, 'api_entry'):
-                    log_entry['api_entry'] = record.api_entry
-                if hasattr(record, 'statistics'):
-                    log_entry['statistics'] = record.statistics
+            return json.dumps(log_record, ensure_ascii=False)
 
-                json_line = json.dumps(log_entry, ensure_ascii=False)
-                self.stream.write(json_line + '\n')
-                self.flush()
-            except Exception:
-                self.handleError(record)
-
-    json_handler = JsonLogHandler(json_log_filename, encoding='utf-8')
+    json_handler = logging.FileHandler(json_log, encoding='utf-8')
     json_handler.setLevel(logging.INFO)
+    json_handler.setFormatter(JSONFormatter())
 
     # Фильтры
-    class ModuleFilter(logging.Filter):
+    class ContextFilter(logging.Filter):
         def filter(self, record):
+            # Добавляем короткое имя модуля
             record.module_short = record.name.split('.')[-1] if '.' in record.name else record.name
+
+            # Добавляем timestamp для быстрого доступа
+            if not hasattr(record, 'log_timestamp'):
+                record.log_timestamp = datetime.now().isoformat()
+
             return True
 
-    class ValidationFilter(logging.Filter):
-        """Фильтр для логов валидации"""
+    context_filter = ContextFilter()
 
-        def filter(self, record):
-            if not hasattr(record, 'validation_type'):
-                record.validation_type = 'general'
-            return True
+    # Применяем фильтры и обработчики
+    for handler in [console_handler, main_handler, error_handler, json_handler, error_tracker]:
+        handler.addFilter(context_filter)
+        logger.addHandler(handler)
 
-    module_filter = ModuleFilter()
-    validation_filter = ValidationFilter()
-
-    # Применяем фильтры
-    console_handler.addFilter(module_filter)
-    main_file_handler.addFilter(validation_filter)
-    json_handler.addFilter(validation_filter)
-
-    # Добавляем обработчики к логгеру
-    logger.addHandler(console_handler)
-    logger.addHandler(main_file_handler)
-    logger.addHandler(error_file_handler)
-    logger.addHandler(json_handler)
-
-    # Логируем создание логгера
+    # Логируем инициализацию
     logger.debug("=" * 100)
-    logger.debug(f"ЛОГГЕР ИНИЦИАЛИЗИРОВАН: {name}")
-    logger.debug(f"Консоль: уровень {logging.getLevelName(console_handler.level)}")
-    logger.debug(f"Основной файл: {main_log_filename}")
-    logger.debug(f"Файл ошибок: {error_log_filename} (ротация ежедневно)")
-    logger.debug(f"JSON лог: {json_log_filename}")
-    logger.debug(f"Всего обработчиков: {len(logger.handlers)}")
+    logger.debug("РАСШИРЕННЫЙ ЛОГГЕР ИНИЦИАЛИЗИРОВАН")
+    logger.debug(f"Имя: {name}")
+    logger.debug(f"Уровень: {logging.getLevelName(logger.level)}")
+    logger.debug(f"Обработчики: {len(logger.handlers)}")
+    logger.debug(f"Основной лог: {main_log}")
+    logger.debug(f"Лог ошибок: {error_log}")
+    logger.debug(f"JSON лог: {json_log}")
     logger.debug("=" * 100)
 
     return logger
 
 
-def get_module_logger(module_name: str) -> logging.Logger:
+def create_structured_logger(module_name: str) -> StructuredLogger:
     """
-    Получить логгер для конкретного модуля
+    Создаёт структурированный логгер для модуля
 
     Args:
         module_name: Имя модуля
 
     Returns:
-        Логгер с именем модуля
+        Структурированный логгер
     """
     logger_name = f"api_format_checker.{module_name}"
-    logger = logging.getLogger(logger_name)
+    logging.getLogger(logger_name)  # Создаём логгер если не существует
 
-    # Устанавливаем уровень для модуля
-    if module_name.startswith("validation_"):
-        logger.setLevel(logging.DEBUG)
-    elif module_name in ["entry_checker", "field_validator"]:
-        logger.setLevel(logging.INFO)
+    structured_logger = StructuredLogger(logger_name)
 
-    return logger
+    # Добавляем контекст по умолчанию
+    structured_logger.add_context(
+        module=module_name,
+        pid=os.getpid(),
+        startup_time=datetime.now().isoformat()
+    )
+
+    return structured_logger
 
 
-def create_validation_logger():
-    """Создаёт специализированный логгер для валидации"""
-    validation_logger = get_module_logger("validation_core")
+def get_error_tracker() -> Optional[ErrorTrackingHandler]:
+    """Возвращает обработчик отслеживания ошибок если он существует"""
+    main_logger = logging.getLogger("api_format_checker")
+    for handler in main_logger.handlers:
+        if isinstance(handler, ErrorTrackingHandler):
+            return handler
+    return None
 
-    # Добавляем дополнительные методы для структурированного логирования
-    def log_validation_result(level, entry_data, field, expected, actual, status, details=None):
-        """Логирует результат валидации одного поля"""
-        extra_data = {
-            'validation_data': {
-                'field': field,
-                'expected': expected,
-                'actual': actual,
-                'status': status,
-                'details': details or {},
-                'timestamp': datetime.now().isoformat()
-            },
-            'api_entry': entry_data
-        }
 
-        message = f"Validation {status.upper()}: {field} = '{actual}'"
-        if status != 'passed':
-            message += f" (expected: {expected})"
+def get_exception_stats() -> Dict:
+    """Возвращает статистику по исключениям из всех логгеров"""
+    error_tracker = get_error_tracker()
+    if error_tracker:
+        return error_tracker.get_error_summary()
+    return {'total_errors': 0, 'error_counts': {}, 'recent_errors': []}
 
-        validation_logger.log(level, message, extra=extra_data)
 
-    def log_entry_validation(entry_num, total_fields, passed_fields, failed_fields, entry_data):
-        """Логирует результат валидации всей записи"""
-        extra_data = {
-            'statistics': {
-                'entry_number': entry_num,
-                'total_fields': total_fields,
-                'passed_fields': passed_fields,
-                'failed_fields': failed_fields,
-                'success_rate': (passed_fields / total_fields * 100) if total_fields > 0 else 0
-            },
-            'api_entry': entry_data
-        }
+# Инициализация глобальных логгеров
+import os
 
-        status = 'PASSED' if failed_fields == 0 else 'FAILED'
-        validation_logger.info(
-            f"Entry #{entry_num}: {status} - {passed_fields}/{total_fields} fields passed",
-            extra=extra_data
-        )
-
-    # Добавляем методы к логгеру
-    validation_logger.log_validation_result = log_validation_result
-    validation_logger.log_entry_validation = log_entry_validation
-
-    return validation_logger
-
+main_logger = setup_logger()
 
 # Создаём специализированные логгеры
-logger = setup_logger()
-validation_logger = create_validation_logger()
-field_logger = get_module_logger("field_validator")
-entry_logger = get_module_logger("entry_checker")
-stats_logger = get_module_logger("statistics")
+validation_logger = create_structured_logger("validation")
+error_logger = create_structured_logger("errors")
+stats_logger = create_structured_logger("statistics")
+perf_logger = create_structured_logger("performance")
+
+# Создаём логгер исключений
+exception_logger = ExceptionLogger(error_logger)

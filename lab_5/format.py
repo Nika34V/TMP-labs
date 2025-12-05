@@ -10,19 +10,23 @@ from typing import List, Tuple, Dict, Set, Optional, Any
 from collections import defaultdict, Counter
 from dataclasses import dataclass, asdict
 from datetime import datetime
+from contextlib import contextmanager
 
-# Импорт модуля логирования
+# Импорт расширенного модуля логирования
 from logger_config import (
-    logger,
+    main_logger,
     validation_logger,
-    field_logger,
-    entry_logger,
+    error_logger,
     stats_logger,
-    get_module_logger
+    perf_logger,
+    exception_logger,
+    get_error_tracker,
+    get_exception_stats,
+    StructuredLogger
 )
 
-# Получаем логгер для текущего модуля
-module_logger = get_module_logger("format_checker")
+# Получаем структурированный логгер для текущего модуля
+module_logger = StructuredLogger("api_format_checker.format_checker")
 
 # Temporary replacement
 # The descriptions that contain () at the end must adapt to the new policy later
@@ -54,965 +58,906 @@ CategoriesLineNumber = Dict[str, int]
 
 
 @dataclass
-class APIEntry:
-    """Класс для представления записи API"""
+class ValidationError:
+    """Класс для представления ошибки валидации"""
     line_number: int
-    title: str
-    description: str
-    auth: str
-    https: str
-    cors: str
-    category: str = ""
-    raw_line: str = ""
+    error_type: str
+    message: str
+    severity: str  # critical, error, warning
+    field: Optional[str] = None
+    expected: Optional[Any] = None
+    actual: Optional[Any] = None
+    context: Optional[Dict] = None
+    timestamp: Optional[str] = None
+
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = datetime.now().isoformat()
 
     def to_dict(self) -> Dict:
-        """Конвертирует в словарь"""
-        return asdict(self)
-
-    def get_validation_data(self) -> Dict:
-        """Возвращает данные для валидации"""
-        return {
-            'line': self.line_number,
-            'title': self.title,
-            'description_length': len(self.description),
-            'auth': self.auth,
-            'https': self.https,
-            'cors': self.cors,
-            'category': self.category
-        }
-
-
-@dataclass
-class ValidationResult:
-    """Результат валидации одного поля"""
-    field_name: str
-    is_valid: bool
-    message: str
-    expected: Any = None
-    actual: Any = None
-    severity: str = "error"  # error, warning, info
-
-    def to_log_dict(self) -> Dict:
         """Конвертирует в словарь для логирования"""
         return {
-            'field': self.field_name,
-            'valid': self.is_valid,
+            'line': self.line_number,
+            'type': self.error_type,
             'message': self.message,
+            'severity': self.severity,
+            'field': self.field,
             'expected': self.expected,
             'actual': self.actual,
-            'severity': self.severity
+            'context': self.context or {},
+            'timestamp': self.timestamp
         }
 
-
-@dataclass
-class EntryValidationSummary:
-    """Сводка по валидации записи"""
-    entry_number: int
-    total_checks: int
-    passed_checks: int
-    failed_checks: int
-    warnings: int
-    entry_data: Dict
-    validation_results: List[ValidationResult]
-
-    @property
-    def success_rate(self) -> float:
-        """Процент успешных проверок"""
-        if self.total_checks == 0:
-            return 0.0
-        return (self.passed_checks / self.total_checks) * 100
-
-    def to_dict(self) -> Dict:
-        """Конвертирует в словарь"""
-        return {
-            'entry_number': self.entry_number,
-            'total_checks': self.total_checks,
-            'passed_checks': self.passed_checks,
-            'failed_checks': self.failed_checks,
-            'warnings': self.warnings,
-            'success_rate': self.success_rate,
-            'entry_data': self.entry_data,
-            'results': [r.to_log_dict() for r in self.validation_results]
-        }
+    def to_error_message(self) -> str:
+        """Форматирует ошибку для вывода пользователю"""
+        line = self.line_number + 1
+        return f'(L{line:03d}) {self.message}'
 
 
-class EntryValidator:
-    """Валидатор записей API"""
+class ErrorCollector:
+    """Коллектор для сбора и обработки ошибок"""
 
     def __init__(self):
-        self.stats = {
-            'total_entries': 0,
-            'total_checks': 0,
-            'passed_checks': 0,
-            'failed_checks': 0,
-            'warnings': 0,
-            'by_field': defaultdict(lambda: {'passed': 0, 'failed': 0}),
-            'by_category': defaultdict(lambda: {'entries': 0, 'passed': 0, 'failed': 0}),
-            'validation_times': []
+        self.errors = []
+        self.error_counts = Counter()
+        self.severity_counts = Counter()
+        self.field_counts = defaultdict(Counter)
+        self.start_time = time.time()
+
+    def add_error(self, error: ValidationError):
+        """Добавляет ошибку в коллектор"""
+        self.errors.append(error)
+        self.error_counts[error.error_type] += 1
+        self.severity_counts[error.severity] += 1
+
+        if error.field:
+            self.field_counts[error.field][error.error_type] += 1
+
+        # Логируем ошибку
+        self._log_error(error)
+
+    def _log_error(self, error: ValidationError):
+        """Логирует ошибку с использованием структурированного логгера"""
+        error_data = error.to_dict()
+
+        if error.severity == 'critical':
+            error_logger.critical(
+                f"Critical validation error at line {error.line_number + 1}: {error.message}",
+                extra={
+                    'error_type': 'validation_critical',
+                    'validation_details': error_data,
+                    'line_number': error.line_number
+                }
+            )
+        elif error.severity == 'error':
+            error_logger.error(
+                f"Validation error at line {error.line_number + 1}: {error.message}",
+                extra={
+                    'error_type': 'validation_error',
+                    'validation_details': error_data,
+                    'line_number': error.line_number
+                }
+            )
+        elif error.severity == 'warning':
+            error_logger.warning(
+                f"Validation warning at line {error.line_number + 1}: {error.message}",
+                extra={
+                    'error_type': 'validation_warning',
+                    'validation_details': error_data,
+                    'line_number': error.line_number
+                }
+            )
+
+    def add_errors(self, errors: List[ValidationError]):
+        """Добавляет несколько ошибок"""
+        for error in errors:
+            self.add_error(error)
+
+    def get_stats(self) -> Dict:
+        """Возвращает статистику по ошибкам"""
+        elapsed = time.time() - self.start_time
+
+        return {
+            'total_errors': len(self.errors),
+            'error_types': dict(self.error_counts),
+            'severity_distribution': dict(self.severity_counts),
+            'field_distribution': {field: dict(counts) for field, counts in self.field_counts.items()},
+            'collection_time': elapsed,
+            'errors_per_second': len(self.errors) / elapsed if elapsed > 0 else 0
         }
 
-    def validate_entry(self, line_num: int, segments: List[str], category: str = "") -> List[ValidationResult]:
-        """Валидирует одну запись API"""
-        start_time = time.time()
+    def log_summary(self):
+        """Логирует сводку по ошибкам"""
+        stats = self.get_stats()
 
-        field_logger.info(f"Начало валидации записи на строке {line_num + 1}")
+        error_logger.info("=" * 100)
+        error_logger.info("СВОДКА ПО ОШИБКАМ ВАЛИДАЦИИ")
+        error_logger.info("=" * 100)
 
-        # Создаём объект записи
-        entry = APIEntry(
-            line_number=line_num + 1,
-            title=segments[index_title] if len(segments) > index_title else "",
-            description=segments[index_desc] if len(segments) > index_desc else "",
-            auth=segments[index_auth] if len(segments) > index_auth else "",
-            https=segments[index_https] if len(segments) > index_https else "",
-            cors=segments[index_cors] if len(segments) > index_cors else "",
-            category=category,
-            raw_line="|".join(segments)
+        error_logger.info(f"Всего ошибок: {stats['total_errors']}")
+        error_logger.info(f"Время сбора: {stats['collection_time']:.2f} сек")
+        error_logger.info(f"Ошибок в секунду: {stats['errors_per_second']:.1f}")
+
+        if stats['severity_distribution']:
+            error_logger.info("Распределение по степени серьезности:")
+            for severity, count in sorted(stats['severity_distribution'].items()):
+                percentage = (count / stats['total_errors'] * 100) if stats['total_errors'] > 0 else 0
+                error_logger.info(f"  {severity:10s}: {count:4d} ({percentage:5.1f}%)")
+
+        if stats['error_types']:
+            error_logger.info("Типы ошибок:")
+            for error_type, count in sorted(stats['error_types'].items(), key=lambda x: x[1], reverse=True)[:10]:
+                percentage = (count / stats['total_errors'] * 100) if stats['total_errors'] > 0 else 0
+                error_logger.info(f"  {error_type:30s}: {count:4d} ({percentage:5.1f}%)")
+
+        if stats['field_distribution']:
+            error_logger.info("Ошибки по полям:")
+            for field, error_counts in sorted(stats['field_distribution'].items()):
+                total = sum(error_counts.values())
+                error_logger.info(f"  {field:15s}: {total:4d} ошибок")
+                for err_type, count in sorted(error_counts.items(), key=lambda x: x[1], reverse=True)[:3]:
+                    error_logger.info(f"    - {err_type:25s}: {count:3d}")
+
+        error_logger.info("=" * 100)
+
+    def save_to_file(self, filename: Optional[str] = None):
+        """Сохраняет ошибки в файл"""
+        if not filename:
+            log_dir = Path("logs")
+            log_dir.mkdir(exist_ok=True)
+            filename = log_dir / f"validation_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+        data = {
+            'metadata': {
+                'generated_at': datetime.now().isoformat(),
+                'total_errors': len(self.errors),
+                'stats': self.get_stats()
+            },
+            'errors': [error.to_dict() for error in self.errors]
+        }
+
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+
+            error_logger.info(f"Ошибки сохранены в файл: {filename}")
+            return filename
+        except Exception as e:
+            exception_logger.log_exception(e, {'action': 'saving_errors'})
+            return None
+
+    def clear(self):
+        """Очищает коллектор"""
+        self.errors.clear()
+        self.error_counts.clear()
+        self.severity_counts.clear()
+        self.field_counts.clear()
+        self.start_time = time.time()
+
+
+@contextmanager
+def error_handling_context(operation: str, context: Optional[Dict] = None):
+    """
+    Контекстный менеджер для обработки ошибок с логированием
+
+    Args:
+        operation: Описание операции для логирования
+        context: Дополнительный контекст
+    """
+    start_time = time.time()
+    operation_id = f"{operation}_{datetime.now().strftime('%H%M%S')}"
+
+    module_logger.add_context(
+        operation=operation,
+        operation_id=operation_id,
+        start_time=start_time
+    )
+
+    if context:
+        module_logger.add_context(**context)
+
+    try:
+        module_logger.info(f"Начало операции: {operation}")
+        yield
+        elapsed = time.time() - start_time
+        module_logger.info(f"Операция завершена успешно: {operation} ({elapsed:.2f} сек)")
+        perf_logger.log_performance_metric(f"{operation}_time", elapsed * 1000, "ms")
+
+    except Exception as e:
+        elapsed = time.time() - start_time
+        error_logger.error(f"Ошибка в операции: {operation} ({elapsed:.2f} сек)")
+
+        # Логируем исключение с детальной информацией
+        exc_info = exception_logger.log_exception(
+            e,
+            {
+                'operation': operation,
+                'operation_id': operation_id,
+                'elapsed_time': elapsed,
+                **module_logger.context
+            }
         )
 
-        # Выполняем проверки
-        validation_results = []
+        # Добавляем метрику ошибки
+        perf_logger.log_performance_metric(f"{operation}_error", 1, "count")
 
-        # Проверка заголовка
-        title_results = self._validate_title(line_num, entry.title)
-        validation_results.extend(title_results)
+        raise
+    finally:
+        module_logger.clear_context()
 
-        # Проверка описания
-        desc_results = self._validate_description(line_num, entry.description)
-        validation_results.extend(desc_results)
 
-        # Проверка аутентификации
-        auth_results = self._validate_auth(line_num, entry.auth)
-        validation_results.extend(auth_results)
+def error_message(line_number: int, message: str) -> str:
+    """Создаёт форматированное сообщение об ошибке"""
+    line = line_number + 1
+    return f'(L{line:03d}) {message}'
 
-        # Проверка HTTPS
-        https_results = self._validate_https(line_num, entry.https)
-        validation_results.extend(https_results)
 
-        # Проверка CORS
-        cors_results = self._validate_cors(line_num, entry.cors)
-        validation_results.extend(cors_results)
+def create_validation_error(line_num: int, error_type: str, message: str,
+                            severity: str = "error", **kwargs) -> ValidationError:
+    """
+    Создаёт объект ошибки валидации
 
-        # Обновляем статистику
-        self._update_statistics(entry, validation_results)
+    Args:
+        line_num: Номер строки (0-based)
+        error_type: Тип ошибки
+        message: Сообщение об ошибке
+        severity: Степень серьезности (critical, error, warning)
+        **kwargs: Дополнительные параметры
 
-        # Создаём сводку
-        summary = self._create_validation_summary(entry, validation_results)
+    Returns:
+        Объект ValidationError
+    """
+    return ValidationError(
+        line_number=line_num,
+        error_type=error_type,
+        message=message,
+        severity=severity,
+        **kwargs
+    )
 
-        # Логируем результат
-        self._log_validation_result(entry, summary)
 
-        # Измеряем время
-        elapsed_time = time.time() - start_time
-        self.stats['validation_times'].append(elapsed_time)
+def check_title(line_num: int, raw_title: str, error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет заголовок API записи"""
+    with error_handling_context("check_title", {"line": line_num + 1, "title": raw_title[:100]}):
+        validation_logger.debug(f"Проверка заголовка на строке {line_num + 1}")
 
-        field_logger.debug(f"Валидация записи завершена за {elapsed_time:.3f} секунд")
+        err_msgs = []
+        validation_errors = []
 
-        return validation_results
-
-    def _validate_title(self, line_num: int, raw_title: str) -> List[ValidationResult]:
-        """Валидация заголовка"""
-        field_logger.debug(f"Валидация заголовка: '{raw_title[:50]}...'")
-
-        results = []
-        entry_data = {'line': line_num + 1, 'field': 'title', 'value': raw_title}
+        title_match = link_re.match(raw_title)
 
         # Проверка синтаксиса Markdown ссылки
-        title_match = link_re.match(raw_title)
         if not title_match:
-            result = ValidationResult(
-                field_name="title",
-                is_valid=False,
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="title_syntax",
                 message='Title syntax should be "[TITLE](LINK)"',
+                severity="error",
+                field="title",
                 expected="[TITLE](URL)",
-                actual=raw_title,
-                severity="error"
+                actual=raw_title
             )
-            results.append(result)
-
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "title_syntax", "[TITLE](LINK)", raw_title, "failed"
-            )
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
         else:
             title = title_match.group(1)
+            validation_logger.debug(f"Извлечён заголовок: '{title}'")
 
             # Проверка на окончание "API"
             if title.upper().endswith(' API'):
-                result = ValidationResult(
-                    field_name="title",
-                    is_valid=False,
-                    message='Title should not end with "... API"',
+                error = create_validation_error(
+                    line_num=line_num,
+                    error_type="title_ending",
+                    message='Title should not end with "... API". Every entry is an API here!',
+                    severity="error",
+                    field="title",
                     expected="Not ending with 'API'",
-                    actual=title,
-                    severity="error"
+                    actual=title
                 )
-                results.append(result)
-
-                validation_logger.log_validation_result(
-                    logging.ERROR, entry_data, "title_ending", "Not ending with 'API'", title, "failed"
-                )
+                validation_errors.append(error)
+                err_msgs.append(error.to_error_message())
             else:
-                result = ValidationResult(
-                    field_name="title",
-                    is_valid=True,
-                    message="Title syntax is correct",
-                    severity="info"
-                )
-                results.append(result)
+                validation_logger.debug(f"Заголовок корректен: '{title}'")
 
-                validation_logger.log_validation_result(
-                    logging.INFO, entry_data, "title_syntax", "[TITLE](LINK)", raw_title, "passed"
-                )
+        # Добавляем ошибки в коллектор если он передан
+        if error_collector and validation_errors:
+            error_collector.add_errors(validation_errors)
 
-        return results
+        if not err_msgs:
+            validation_logger.debug(f"Заголовок на строке {line_num + 1} прошёл проверку")
 
-    def _validate_description(self, line_num: int, description: str) -> List[ValidationResult]:
-        """Валидация описания"""
-        field_logger.debug(f"Валидация описания (длина: {len(description)}): '{description[:50]}...'")
+        return err_msgs
 
-        results = []
-        entry_data = {'line': line_num + 1, 'field': 'description', 'value': description[:100]}
 
-        # Проверка заглавной первой буквы
+def check_description(line_num: int, description: str, error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет описание API записи"""
+    with error_handling_context("check_description", {"line": line_num + 1, "desc_length": len(description)}):
+        validation_logger.debug(f"Проверка описания на строке {line_num + 1}")
+
+        err_msgs = []
+        validation_errors = []
+
         first_char = description[0] if description else ''
         if first_char and first_char.upper() != first_char:
-            result = ValidationResult(
-                field_name="description",
-                is_valid=False,
-                message='First character of description is not capitalized',
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="description_capitalization",
+                message='first character of description is not capitalized',
+                severity="error",
+                field="description",
                 expected="Capital letter",
-                actual=first_char,
-                severity="error"
+                actual=first_char
             )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "description_capitalization", "Capital letter", first_char, "failed"
-            )
-        else:
-            result = ValidationResult(
-                field_name="description",
-                is_valid=True,
-                message="Description starts with capital letter",
-                severity="info"
-            )
-            results.append(result)
-
-            validation_logger.log_validation_result(
-                logging.INFO, entry_data, "description_capitalization", "Capital letter", first_char, "passed"
-            )
-
-        # Проверка пунктуации в конце
         last_char = description[-1] if description else ''
         if last_char in punctuation:
-            result = ValidationResult(
-                field_name="description",
-                is_valid=False,
-                message=f'Description should not end with {last_char}',
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="description_punctuation",
+                message=f'description should not end with {last_char}',
+                severity="error",
+                field="description",
                 expected="No punctuation at end",
-                actual=last_char,
-                severity="error"
+                actual=last_char
             )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "description_punctuation", "No punctuation", last_char, "failed"
-            )
-        else:
-            result = ValidationResult(
-                field_name="description",
-                is_valid=True,
-                message="Description ends without punctuation",
-                severity="info"
-            )
-            results.append(result)
-
-        # Проверка длины
         desc_length = len(description)
         if desc_length > max_description_length:
-            result = ValidationResult(
-                field_name="description",
-                is_valid=False,
-                message=f'Description should not exceed {max_description_length} characters',
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="description_length",
+                message=f'description should not exceed {max_description_length} characters (currently {desc_length})',
+                severity="error",
+                field="description",
                 expected=f"≤ {max_description_length} chars",
-                actual=f"{desc_length} chars",
-                severity="error"
+                actual=f"{desc_length} chars"
             )
-            results.append(result)
-
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "description_length", f"≤ {max_description_length}", desc_length, "failed"
-            )
-        else:
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
+        elif desc_length < 20:
             # Предупреждение для слишком коротких описаний
-            if desc_length < 20:
-                result = ValidationResult(
-                    field_name="description",
-                    is_valid=True,
-                    message="Description is very short",
-                    expected="≥ 20 chars recommended",
-                    actual=f"{desc_length} chars",
-                    severity="warning"
-                )
-                results.append(result)
-                self.stats['warnings'] += 1
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="description_too_short",
+                message=f'description is very short ({desc_length} characters)',
+                severity="warning",
+                field="description",
+                expected="≥ 20 chars recommended",
+                actual=f"{desc_length} chars"
+            )
+            validation_errors.append(error)
+            # Предупреждения не добавляем в err_msgs, так как это не ошибки
 
-                validation_logger.log_validation_result(
-                    logging.WARNING, entry_data, "description_length", "≥ 20 recommended", desc_length, "warning"
-                )
-            else:
-                result = ValidationResult(
-                    field_name="description",
-                    is_valid=True,
-                    message=f"Description length is acceptable ({desc_length} chars)",
-                    severity="info"
-                )
-                results.append(result)
+        # Добавляем ошибки в коллектор если он передан
+        if error_collector and validation_errors:
+            error_collector.add_errors(validation_errors)
 
-        return results
+        if not err_msgs:
+            validation_logger.debug(f"Описание на строке {line_num + 1} прошло проверку")
 
-    def _validate_auth(self, line_num: int, auth: str) -> List[ValidationResult]:
-        """Валидация поля аутентификации"""
-        field_logger.debug(f"Валидация аутентификации: '{auth}'")
+        return err_msgs
 
-        results = []
-        entry_data = {'line': line_num + 1, 'field': 'auth', 'value': auth}
+
+def check_auth(line_num: int, auth: str, error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет поле аутентификации"""
+    with error_handling_context("check_auth", {"line": line_num + 1, "auth_value": auth}):
+        validation_logger.debug(f"Проверка аутентификации на строке {line_num + 1}")
+
+        err_msgs = []
+        validation_errors = []
 
         backtick = '`'
         auth_clean = auth.replace(backtick, '')
 
         # Проверка обратных кавычек для не-"No" значений
         if auth_clean != 'No' and (not auth.startswith(backtick) or not auth.endswith(backtick)):
-            result = ValidationResult(
-                field_name="auth",
-                is_valid=False,
-                message='Auth value is not enclosed with `backticks`',
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="auth_backticks",
+                message='auth value is not enclosed with `backticks`',
+                severity="error",
+                field="auth",
                 expected=f"`{auth_clean}`",
-                actual=auth,
-                severity="error"
+                actual=auth
             )
-            results.append(result)
-
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "auth_backticks", f"`{auth_clean}`", auth, "failed"
-            )
-        else:
-            result = ValidationResult(
-                field_name="auth",
-                is_valid=True,
-                message="Auth value properly formatted",
-                severity="info"
-            )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
         # Проверка допустимых значений
         if auth_clean not in auth_keys:
-            result = ValidationResult(
-                field_name="auth",
-                is_valid=False,
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="auth_invalid_value",
                 message=f'{auth} is not a valid Auth option',
+                severity="error",
+                field="auth",
                 expected=f"One of {auth_keys}",
-                actual=auth,
-                severity="error"
+                actual=auth
             )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "auth_value", auth_keys, auth, "failed"
-            )
-        else:
-            result = ValidationResult(
-                field_name="auth",
-                is_valid=True,
-                message=f"Auth value '{auth_clean}' is valid",
-                severity="info"
-            )
-            results.append(result)
+        # Добавляем ошибки в коллектор если он передан
+        if error_collector and validation_errors:
+            error_collector.add_errors(validation_errors)
 
-            validation_logger.log_validation_result(
-                logging.INFO, entry_data, "auth_value", auth_keys, auth_clean, "passed"
-            )
+        if not err_msgs:
+            validation_logger.debug(f"Аутентификация на строке {line_num + 1} корректна")
 
-        return results
+        return err_msgs
 
-    def _validate_https(self, line_num: int, https: str) -> List[ValidationResult]:
-        """Валидация поля HTTPS"""
-        field_logger.debug(f"Валидация HTTPS: '{https}'")
 
-        results = []
-        entry_data = {'line': line_num + 1, 'field': 'https', 'value': https}
+def check_https(line_num: int, https: str, error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет поле HTTPS"""
+    with error_handling_context("check_https", {"line": line_num + 1, "https_value": https}):
+        validation_logger.debug(f"Проверка HTTPS на строке {line_num + 1}")
+
+        err_msgs = []
+        validation_errors = []
 
         if https not in https_keys:
-            result = ValidationResult(
-                field_name="https",
-                is_valid=False,
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="https_invalid_value",
                 message=f'{https} is not a valid HTTPS option',
+                severity="error",
+                field="https",
                 expected=f"One of {https_keys}",
-                actual=https,
-                severity="error"
+                actual=https
             )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "https_value", https_keys, https, "failed"
-            )
-        else:
-            result = ValidationResult(
-                field_name="https",
-                is_valid=True,
-                message=f"HTTPS value '{https}' is valid",
-                severity="info"
-            )
-            results.append(result)
+        # Добавляем ошибки в коллектор если он передан
+        if error_collector and validation_errors:
+            error_collector.add_errors(validation_errors)
 
-            validation_logger.log_validation_result(
-                logging.INFO, entry_data, "https_value", https_keys, https, "passed"
-            )
+        if not err_msgs:
+            validation_logger.debug(f"HTTPS на строке {line_num + 1} корректен")
 
-        return results
+        return err_msgs
 
-    def _validate_cors(self, line_num: int, cors: str) -> List[ValidationResult]:
-        """Валидация поля CORS"""
-        field_logger.debug(f"Валидация CORS: '{cors}'")
 
-        results = []
-        entry_data = {'line': line_num + 1, 'field': 'cors', 'value': cors}
+def check_cors(line_num: int, cors: str, error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет поле CORS"""
+    with error_handling_context("check_cors", {"line": line_num + 1, "cors_value": cors}):
+        validation_logger.debug(f"Проверка CORS на строке {line_num + 1}")
+
+        err_msgs = []
+        validation_errors = []
 
         if cors not in cors_keys:
-            result = ValidationResult(
-                field_name="cors",
-                is_valid=False,
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="cors_invalid_value",
                 message=f'{cors} is not a valid CORS option',
+                severity="error",
+                field="cors",
                 expected=f"One of {cors_keys}",
-                actual=cors,
-                severity="error"
+                actual=cors
             )
-            results.append(result)
+            validation_errors.append(error)
+            err_msgs.append(error.to_error_message())
 
-            validation_logger.log_validation_result(
-                logging.ERROR, entry_data, "cors_value", cors_keys, cors, "failed"
+        # Добавляем ошибки в коллектор если он передан
+        if error_collector and validation_errors:
+            error_collector.add_errors(validation_errors)
+
+        if not err_msgs:
+            validation_logger.debug(f"CORS на строке {line_num + 1} корректен")
+
+        return err_msgs
+
+
+def check_entry(line_num: int, segments: List[str], error_collector: Optional[ErrorCollector] = None) -> List[str]:
+    """Проверяет запись API"""
+    with error_handling_context("check_entry", {"line": line_num + 1, "segment_count": len(segments)}):
+        validation_logger.debug(f"Начало проверки записи на строке {line_num + 1}")
+
+        if len(segments) < 5:
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="insufficient_segments",
+                message=f'entry does not have all the required columns (have {len(segments)}, need 5)',
+                severity="critical",
+                field="structure"
             )
+            if error_collector:
+                error_collector.add_error(error)
+            return [error.to_error_message()]
+
+        raw_title = segments[index_title]
+        description = segments[index_desc]
+        auth = segments[index_auth]
+        https = segments[index_https]
+        cors = segments[index_cors]
+
+        title_err_msgs = check_title(line_num, raw_title, error_collector)
+        desc_err_msgs = check_description(line_num, description, error_collector)
+        auth_err_msgs = check_auth(line_num, auth, error_collector)
+        https_err_msgs = check_https(line_num, https, error_collector)
+        cors_err_msgs = check_cors(line_num, cors, error_collector)
+
+        err_msgs = [
+            *title_err_msgs,
+            *desc_err_msgs,
+            *auth_err_msgs,
+            *https_err_msgs,
+            *cors_err_msgs
+        ]
+
+        if err_msgs:
+            validation_logger.warning(f"Найдено {len(err_msgs)} ошибок в записи на строке {line_num + 1}")
         else:
-            result = ValidationResult(
-                field_name="cors",
-                is_valid=True,
-                message=f"CORS value '{cors}' is valid",
-                severity="info"
-            )
-            results.append(result)
+            validation_logger.debug(f"Запись на строке {line_num + 1} прошла все проверки успешно")
 
-            validation_logger.log_validation_result(
-                logging.INFO, entry_data, "cors_value", cors_keys, cors, "passed"
-            )
-
-        return results
-
-    def _update_statistics(self, entry: APIEntry, results: List[ValidationResult]):
-        """Обновляет статистику валидации"""
-        self.stats['total_entries'] += 1
-        self.stats['total_checks'] += len(results)
-
-        # Статистика по категориям
-        if entry.category:
-            cat_stats = self.stats['by_category'][entry.category]
-            cat_stats['entries'] += 1
-
-            # Считаем успешные/неуспешные проверки для этой записи
-            passed_in_entry = sum(1 for r in results if r.is_valid and r.severity != 'warning')
-            failed_in_entry = sum(1 for r in results if not r.is_valid)
-
-            cat_stats['passed'] += passed_in_entry
-            cat_stats['failed'] += failed_in_entry
-
-        # Статистика по полям
-        for result in results:
-            field_stats = self.stats['by_field'][result.field_name]
-            if result.is_valid and result.severity != 'warning':
-                field_stats['passed'] += 1
-                self.stats['passed_checks'] += 1
-            elif not result.is_valid:
-                field_stats['failed'] += 1
-                self.stats['failed_checks'] += 1
-            elif result.severity == 'warning':
-                self.stats['warnings'] += 1
-
-    def _create_validation_summary(self, entry: APIEntry, results: List[ValidationResult]) -> EntryValidationSummary:
-        """Создаёт сводку по валидации записи"""
-        total_checks = len(results)
-        passed_checks = sum(1 for r in results if r.is_valid and r.severity != 'warning')
-        failed_checks = sum(1 for r in results if not r.is_valid)
-        warnings = sum(1 for r in results if r.severity == 'warning')
-
-        return EntryValidationSummary(
-            entry_number=self.stats['total_entries'],
-            total_checks=total_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            warnings=warnings,
-            entry_data=entry.get_validation_data(),
-            validation_results=results
-        )
-
-    def _log_validation_result(self, entry: APIEntry, summary: EntryValidationSummary):
-        """Логирует результат валидации записи"""
-        entry_data = {
-            'line': entry.line_number,
-            'title': entry.title[:50] + '...' if len(entry.title) > 50 else entry.title,
-            'category': entry.category,
-            'validation_summary': summary.to_dict()
-        }
-
-        if summary.failed_checks > 0:
-            entry_logger.warning(
-                f"Entry #{summary.entry_number} (L{entry.line_number}): FAILED - {summary.failed_checks} errors",
-                extra={'api_entry': entry_data, 'validation_type': 'entry_failed'}
-            )
-        elif summary.warnings > 0:
-            entry_logger.info(
-                f"Entry #{summary.entry_number} (L{entry.line_number}): PASSED with {summary.warnings} warnings",
-                extra={'api_entry': entry_data, 'validation_type': 'entry_warning'}
-            )
-        else:
-            entry_logger.info(
-                f"Entry #{summary.entry_number} (L{entry.line_number}): PASSED - all checks OK",
-                extra={'api_entry': entry_data, 'validation_type': 'entry_passed'}
-            )
-
-        # Детальное логирование через специализированный логгер
-        validation_logger.log_entry_validation(
-            summary.entry_number,
-            summary.total_checks,
-            summary.passed_checks,
-            summary.failed_checks,
-            entry_data
-        )
-
-    def get_statistics(self) -> Dict:
-        """Возвращает статистику валидации"""
-        total_time = sum(self.stats['validation_times']) if self.stats['validation_times'] else 0
-        avg_time = total_time / len(self.stats['validation_times']) if self.stats['validation_times'] else 0
-
-        stats = self.stats.copy()
-        stats['total_validation_time'] = total_time
-        stats['average_validation_time'] = avg_time
-
-        if stats['total_checks'] > 0:
-            stats['success_rate'] = (stats['passed_checks'] / stats['total_checks']) * 100
-        else:
-            stats['success_rate'] = 0
-
-        # Добавляем статистику по полям
-        stats['field_success_rates'] = {}
-        for field, field_stats in stats['by_field'].items():
-            total = field_stats['passed'] + field_stats['failed']
-            if total > 0:
-                stats['field_success_rates'][field] = (field_stats['passed'] / total) * 100
-
-        # Статистика по категориям
-        stats['category_success_rates'] = {}
-        for category, cat_stats in stats['by_category'].items():
-            total_checks = cat_stats['passed'] + cat_stats['failed']
-            if total_checks > 0:
-                stats['category_success_rates'][category] = (cat_stats['passed'] / total_checks) * 100
-
-        return stats
-
-    def log_final_statistics(self):
-        """Логирует итоговую статистику"""
-        stats = self.get_statistics()
-
-        stats_logger.info("=" * 100)
-        stats_logger.info("ИТОГОВАЯ СТАТИСТИКА ВАЛИДАЦИИ")
-        stats_logger.info("=" * 100)
-
-        stats_logger.info(f"Всего записей: {stats['total_entries']}")
-        stats_logger.info(f"Всего проверок: {stats['total_checks']}")
-        stats_logger.info(f"Успешных проверок: {stats['passed_checks']} ({stats.get('success_rate', 0):.1f}%)")
-        stats_logger.info(f"Неуспешных проверок: {stats['failed_checks']}")
-        stats_logger.info(f"Предупреждений: {stats['warnings']}")
-        stats_logger.info(f"Общее время валидации: {stats['total_validation_time']:.3f} сек")
-        stats_logger.info(f"Среднее время на запись: {stats['average_validation_time']:.3f} сек")
-
-        # Статистика по полям
-        stats_logger.info("\nСТАТИСТИКА ПО ПОЛЯМ:")
-        for field, field_stats in sorted(stats['by_field'].items()):
-            total = field_stats['passed'] + field_stats['failed']
-            success_rate = stats['field_success_rates'].get(field, 0)
-            stats_logger.info(f"  {field:15s}: {field_stats['passed']:3d}/{total:3d} ({success_rate:5.1f}%)")
-
-        # Статистика по категориям
-        if stats['by_category']:
-            stats_logger.info("\nСТАТИСТИКА ПО КАТЕГОРИЯМ:")
-            for category, cat_stats in sorted(stats['by_category'].items()):
-                total_checks = cat_stats['passed'] + cat_stats['failed']
-                success_rate = stats['category_success_rates'].get(category, 0)
-                stats_logger.info(
-                    f"  {category:20s}: {cat_stats['entries']:2d} entries, {cat_stats['passed']:3d}/{total_checks:3d} checks ({success_rate:5.1f}%)")
-
-        stats_logger.info("=" * 100)
-
-        # Сохраняем статистику в JSON для дальнейшего анализа
-        self._save_statistics_to_file(stats)
-
-    def _save_statistics_to_file(self, stats: Dict):
-        """Сохраняет статистику в JSON файл"""
-        log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
-
-        stats_file = log_dir / f"validation_stats_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-
-        try:
-            with open(stats_file, 'w', encoding='utf-8') as f:
-                json.dump(stats, f, indent=2, ensure_ascii=False, default=str)
-            stats_logger.info(f"Статистика сохранена в: {stats_file}")
-        except Exception as e:
-            stats_logger.error(f"Ошибка сохранения статистики: {e}")
-
-
-def error_message(line_number: int, message: str) -> str:
-    line = line_number + 1
-    return f'(L{line:03d}) {message}'
-
-
-def get_categories_content(contents: List[str]) -> Tuple[Categories, CategoriesLineNumber]:
-    """Извлекает категории и их содержимое из файла"""
-    module_logger.info("Начало извлечения категорий и API из файла")
-
-    categories = {}
-    category_line_num = {}
-    current_category = None
-    api_count_in_category = 0
-
-    for line_num, line_content in enumerate(contents):
-        if line_content.startswith(anchor):
-            # Сохраняем статистику предыдущей категории
-            if current_category and api_count_in_category > 0:
-                module_logger.debug(f"Категория '{current_category}': {api_count_in_category} API")
-
-            category = line_content.split(anchor)[1].strip()
-            categories[category] = []
-            category_line_num[category] = line_num
-            current_category = category
-            api_count_in_category = 0
-
-            module_logger.info(f"Обнаружена категория: '{category}' на строке {line_num + 1}")
-            continue
-
-        if not line_content.startswith('|') or line_content.startswith('|---'):
-            continue
-
-        raw_title = [
-            raw_content.strip() for raw_content in line_content.split('|')[1:-1]
-        ][0]
-
-        title_match = link_re.match(raw_title)
-        if title_match:
-            title = title_match.group(1).upper()
-            categories[current_category].append(title)
-            api_count_in_category += 1
-
-            if api_count_in_category <= 3:  # Логируем только первые 3 для краткости
-                module_logger.debug(f"API #{api_count_in_category} в '{current_category}': {title}")
-
-    # Логируем статистику по последней категории
-    if current_category and api_count_in_category > 0:
-        module_logger.debug(f"Категория '{current_category}': {api_count_in_category} API")
-
-    module_logger.info(f"Извлечение завершено: {len(categories)} категорий")
-    for category, api_list in categories.items():
-        module_logger.debug(f"  '{category}': {len(api_list)} API")
-
-    return (categories, category_line_num)
+        return err_msgs
 
 
 def check_file_format(lines: List[str]) -> List[str]:
     """Основная функция проверки формата файла"""
-    logger.info("=" * 100)
-    logger.info(f"НАЧАЛО ПРОВЕРКИ ФОРМАТА ФАЙЛА")
-    logger.info("=" * 100)
+    with error_handling_context("check_file_format", {"line_count": len(lines)}):
+        main_logger.info("=" * 100)
+        main_logger.info(f"НАЧАЛО ПРОВЕРКИ ФОРМАТА ФАЙЛА")
+        main_logger.info("=" * 100)
 
-    start_time = time.time()
+        start_time = time.time()
 
-    err_msgs = []
-    category_title_in_index = []
+        # Создаём коллектор ошибок
+        error_collector = ErrorCollector()
 
-    # Создаём валидатор
-    validator = EntryValidator()
-    entry_logger.info("Валидатор записей инициализирован")
+        # Добавляем контекст для логов
+        module_logger.add_context(
+            check_type="full_validation",
+            file_lines=len(lines),
+            start_timestamp=datetime.now().isoformat()
+        )
 
-    # Получение категорий из файла
-    categories, category_line_num = get_categories_content(lines)
+        err_msgs = []
+        current_category = ''
+        total_entries = 0
+        entries_by_category = defaultdict(int)
 
-    # Проверка отдельных записей
-    current_category = ''
-    category_start_line = 0
-    total_entries = 0
-    entries_by_category = defaultdict(int)
+        main_logger.info("Начало проверки отдельных записей API")
 
-    logger.info("Начало проверки отдельных записей API")
+        try:
+            for line_num, line_content in enumerate(lines):
+                # Определяем категории
+                if line_content.startswith(anchor):
+                    category_match = anchor_re.match(line_content)
+                    if category_match:
+                        current_category = category_match.group(1)
+                        validation_logger.info(f"Обработка категории: '{current_category}'")
+                    continue
 
-    for line_num, line_content in enumerate(lines):
-        # Определяем категории
-        if line_content.startswith(anchor):
-            category_match = anchor_re.match(line_content)
-            if category_match:
-                category_name = category_match.group(1)
-                current_category = category_name
-                category_start_line = line_num
+                # Пропускаем неинтересные строки
+                if not line_content.startswith('|') or line_content.startswith('|---'):
+                    continue
 
-                logger.info(f"Обработка категории: '{current_category}'")
+                # Проверяем запись
+                total_entries += 1
+                entries_by_category[current_category] += 1
 
-            continue
+                segments = line_content.split('|')[1:-1]
 
-        # Пропускаем неинтересные строки
-        if not line_content.startswith('|') or line_content.startswith('|---'):
-            continue
+                # Проверка форматирования пробелов
+                spacing_issues = []
+                for i, segment in enumerate(segments):
+                    left_spaces = len(segment) - len(segment.lstrip())
+                    right_spaces = len(segment) - len(segment.rstrip())
 
-        # Проверяем запись
-        total_entries += 1
-        entries_by_category[current_category] += 1
+                    if left_spaces != 1 or right_spaces != 1:
+                        spacing_issues.append(i)
 
-        segments = line_content.split('|')[1:-1]
+                if spacing_issues:
+                    error = create_validation_error(
+                        line_num=line_num,
+                        error_type="spacing_format",
+                        message='each segment must start and end with exactly 1 space',
+                        severity="error",
+                        field="formatting",
+                        expected="Exactly 1 space at start and end",
+                        actual=f"Positions with issues: {spacing_issues}"
+                    )
+                    error_collector.add_error(error)
+                    err_msgs.append(error.to_error_message())
 
-        # Проверка количества колонок
-        if len(segments) < num_segments:
-            err_msg = error_message(line_num,
-                                    f'entry does not have all the required columns (have {len(segments)}, need {num_segments})')
-            err_msgs.append(err_msg)
-            entry_logger.error(
-                f"Недостаточно колонок в записи на строке {line_num + 1}: {len(segments)} вместо {num_segments}")
-            continue
+                segments = [segment.strip() for segment in segments]
+                entry_err_msgs = check_entry(line_num, segments, error_collector)
+                err_msgs.extend(entry_err_msgs)
 
-        # Проверка форматирования пробелов
-        spacing_issues = []
-        for i, segment in enumerate(segments):
-            left_spaces = len(segment) - len(segment.lstrip())
-            right_spaces = len(segment) - len(segment.rstrip())
+                # Логируем прогресс
+                if total_entries % 10 == 0:
+                    validation_logger.info(f"Проверено {total_entries} записей...")
 
-            if left_spaces != 1 or right_spaces != 1:
-                spacing_issues.append(i)
+        except Exception as e:
+            # Логируем критическую ошибку при проверке
+            exc_info = exception_logger.log_exception(
+                e,
+                {
+                    'operation': 'file_validation',
+                    'lines_processed': line_num,
+                    'current_category': current_category,
+                    'total_entries': total_entries
+                },
+                level="critical"
+            )
 
-        if spacing_issues:
-            err_msg = error_message(line_num, 'each segment must start and end with exactly 1 space')
-            err_msgs.append(err_msg)
-            field_logger.warning(f"Проблемы с пробелами в записи на строке {line_num + 1}: позиции {spacing_issues}")
+            error = create_validation_error(
+                line_num=line_num,
+                error_type="validation_exception",
+                message=f'Critical error during validation: {str(e)}',
+                severity="critical",
+                field="system",
+                context=exc_info
+            )
+            error_collector.add_error(error)
+            err_msgs.append(error.to_error_message())
 
-        segments = [segment.strip() for segment in segments]
+        # Логируем итоговую статистику ошибок
+        error_collector.log_summary()
 
-        # Валидация записи
-        validation_results = validator.validate_entry(line_num, segments, current_category)
+        # Сохраняем ошибки в файл
+        if error_collector.errors:
+            error_file = error_collector.save_to_file()
+            if error_file:
+                stats_logger.info(f"Детальная информация об ошибках сохранена в: {error_file}")
 
-        # Конвертируем результаты валидации в сообщения об ошибках
-        for result in validation_results:
-            if not result.is_valid:
-                err_msg = error_message(line_num, result.message)
-                err_msgs.append(err_msg)
+        # Вывод общей статистики
+        elapsed_time = time.time() - start_time
 
-        # Логируем прогресс
-        if total_entries % 5 == 0:
-            entry_logger.info(f"Проверено {total_entries} записей...")
+        stats_logger.info("=" * 100)
+        stats_logger.info("ОБЩАЯ СТАТИСТИКА ПРОВЕРКИ")
+        stats_logger.info("=" * 100)
+        stats_logger.info(f"Общее время проверки: {elapsed_time:.2f} секунд")
+        stats_logger.info(f"Всего записей API: {total_entries}")
+        stats_logger.info(f"Всего ошибок: {len(err_msgs)}")
+        stats_logger.info(f"Ошибок в секунду: {len(err_msgs) / elapsed_time:.1f}" if elapsed_time > 0 else "N/A")
 
-    # Логируем итоговую статистику валидации
-    validator.log_final_statistics()
+        # Статистика по категориям
+        if entries_by_category:
+            stats_logger.info("Записей по категориям:")
+            for category, count in sorted(entries_by_category.items()):
+                stats_logger.info(f"  {category}: {count} записей")
 
-    # Вывод общей статистики
-    elapsed_time = time.time() - start_time
+        # Получаем общую статистику по исключениям
+        exception_stats = exception_logger.get_exception_stats()
+        if exception_stats['total_exceptions'] > 0:
+            stats_logger.info(f"Исключений во время проверки: {exception_stats['total_exceptions']}")
 
-    logger.info("=" * 100)
-    logger.info("ОБЩАЯ СТАТИСТИКА ПРОВЕРКИ")
-    logger.info("=" * 100)
-    logger.info(f"Общее время проверки: {elapsed_time:.2f} секунд")
-    logger.info(f"Всего записей API: {total_entries}")
-    logger.info(f"Всего категорий: {len(categories)}")
-    logger.info(f"Найдено ошибок: {len(err_msgs)}")
+        stats_logger.info("=" * 100)
 
-    # Статистика по категориям
-    if entries_by_category:
-        logger.info("Записей по категориям:")
-        for category, count in sorted(entries_by_category.items()):
-            logger.info(f"  {category}: {count} записей")
+        # Логируем метрики производительности
+        perf_logger.log_performance_metric("total_validation_time", elapsed_time * 1000, "ms")
+        perf_logger.log_performance_metric("entries_processed", total_entries, "count")
+        perf_logger.log_performance_metric("errors_found", len(err_msgs), "count")
 
-    logger.info("=" * 100)
+        if total_entries > 0:
+            perf_logger.log_performance_metric("time_per_entry", (elapsed_time / total_entries) * 1000, "ms")
 
-    return err_msgs
+        return err_msgs
 
 
 def analyze_file_content(lines: List[str]) -> Dict:
-    """
-    Анализ содержимого файла для логирования статистики
+    """Анализирует содержимое файла"""
+    with error_handling_context("analyze_file_content", {"line_count": len(lines)}):
+        validation_logger.info("Анализ содержимого файла")
 
-    Args:
-        lines: Строки файла
+        stats = {
+            'total_lines': len(lines),
+            'non_empty_lines': 0,
+            'category_lines': 0,
+            'table_lines': 0,
+            'separator_lines': 0,
+            'index_lines': 0,
+            'header_lines': 0,
+            'categories': [],
+            'lines_by_type': Counter()
+        }
 
-    Returns:
-        Словарь со статистикой
-    """
-    module_logger.info("Анализ содержимого файла")
+        try:
+            for line_num, line_content in enumerate(lines):
+                line_stripped = line_content.strip()
 
-    stats = {
-        'total_lines': len(lines),
-        'non_empty_lines': 0,
-        'category_lines': 0,
-        'table_lines': 0,
-        'separator_lines': 0,
-        'index_lines': 0,
-        'header_lines': 0,
-        'categories': [],
-        'lines_by_type': Counter()
-    }
+                if line_stripped:
+                    stats['non_empty_lines'] += 1
 
-    for line_num, line_content in enumerate(lines):
-        line_stripped = line_content.strip()
+                    if line_stripped.startswith('###'):
+                        stats['category_lines'] += 1
+                        stats['lines_by_type']['category_header'] += 1
+                        category_name = line_stripped.replace('###', '').strip()
+                        stats['categories'].append(category_name)
+                    elif line_stripped.startswith('##'):
+                        stats['header_lines'] += 1
+                        stats['lines_by_type']['section_header'] += 1
+                    elif line_stripped.startswith('#'):
+                        stats['header_lines'] += 1
+                        stats['lines_by_type']['main_header'] += 1
+                    elif line_stripped.startswith('|'):
+                        if line_stripped.startswith('|---'):
+                            stats['separator_lines'] += 1
+                            stats['lines_by_type']['table_separator'] += 1
+                        else:
+                            stats['table_lines'] += 1
+                            stats['lines_by_type']['table_row'] += 1
+                    elif line_stripped.startswith('*'):
+                        stats['index_lines'] += 1
+                        stats['lines_by_type']['index_entry'] += 1
+                    else:
+                        stats['lines_by_type']['other'] += 1
 
-        if line_stripped:
-            stats['non_empty_lines'] += 1
+        except Exception as e:
+            exception_logger.log_exception(e, {'operation': 'file_analysis', 'line_num': line_num})
+            raise
 
-            if line_stripped.startswith('###'):
-                stats['category_lines'] += 1
-                stats['lines_by_type']['category_header'] += 1
-                category_name = line_stripped.replace('###', '').strip()
-                stats['categories'].append(category_name)
-            elif line_stripped.startswith('##'):
-                stats['header_lines'] += 1
-                stats['lines_by_type']['section_header'] += 1
-            elif line_stripped.startswith('#'):
-                stats['header_lines'] += 1
-                stats['lines_by_type']['main_header'] += 1
-            elif line_stripped.startswith('|'):
-                if line_stripped.startswith('|---'):
-                    stats['separator_lines'] += 1
-                    stats['lines_by_type']['table_separator'] += 1
-                else:
-                    stats['table_lines'] += 1
-                    stats['lines_by_type']['table_row'] += 1
-            elif line_stripped.startswith('*'):
-                stats['index_lines'] += 1
-                stats['lines_by_type']['index_entry'] += 1
-            else:
-                stats['lines_by_type']['other'] += 1
+        validation_logger.info(f"Анализ завершен: {stats['total_lines']} строк, {len(stats['categories'])} категорий")
+        validation_logger.debug(f"Распределение по типам строк: {dict(stats['lines_by_type'])}")
 
-    module_logger.info(f"Анализ завершен: {stats['total_lines']} строк, {len(stats['categories'])} категорий")
-    module_logger.debug(f"Распределение по типам строк: {dict(stats['lines_by_type'])}")
-
-    return stats
+        return stats
 
 
 def main(filename: str) -> None:
-    logger.info("=" * 100)
-    logger.info(f"ЗАПУСК ПРОГРАММЫ ПРОВЕРКИ API-ЛИСТА")
-    logger.info(f"Файл: {filename}")
-    logger.info(f"Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info("=" * 100)
+    """Основная функция программы"""
+    # Устанавливаем контекст для всего запуска
+    module_logger.add_context(
+        program_run_id=datetime.now().strftime('%Y%m%d_%H%M%S'),
+        filename=filename,
+        python_version=sys.version,
+        platform=sys.platform
+    )
 
-    try:
-        # Логирование информации о файле
-        if not os.path.exists(filename):
+    with error_handling_context("main_program_execution", {"filename": filename}):
+        main_logger.info("=" * 100)
+        main_logger.info(f"ЗАПУСК ПРОГРАММЫ ПРОВЕРКИ API-ЛИСТА")
+        main_logger.info(f"Файл: {filename}")
+        main_logger.info(f"Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        main_logger.info(f"PID: {os.getpid()}")
+        main_logger.info("=" * 100)
+
+        try:
+            # Проверка существования файла
+            if not os.path.exists(filename):
+                error_msg = f"Файл не найден: {filename}"
+                error = create_validation_error(
+                    line_num=0,
+                    error_type="file_not_found",
+                    message=error_msg,
+                    severity="critical",
+                    field="system"
+                )
+
+                error_logger.critical(error_msg, extra={'validation_details': error.to_dict()})
+                print(error_msg)
+                sys.exit(1)
+
+            # Сбор информации о файле
+            file_size = os.path.getsize(filename)
+            file_mtime = datetime.fromtimestamp(os.path.getmtime(filename)).strftime('%Y-%m-%d %H:%M:%S')
+
+            stats_logger.info("ИНФОРМАЦИЯ О ФАЙЛЕ:")
+            stats_logger.info(f"  Размер: {file_size} байт ({file_size / 1024:.1f} KB)")
+            stats_logger.info(f"  Путь: {os.path.abspath(filename)}")
+            stats_logger.info(f"  Время изменения: {file_mtime}")
+
+            # Чтение файла
+            with open(filename, mode='r', encoding='utf-8') as file:
+                lines = list(line.rstrip() for line in file)
+
+            # Анализ содержимого файла
+            stats = analyze_file_content(lines)
+
+            stats_logger.info("СТАТИСТИКА ФАЙЛА:")
+            stats_logger.info(f"  Всего строк: {stats['total_lines']}")
+            stats_logger.info(
+                f"  Непустых строк: {stats['non_empty_lines']} ({stats['non_empty_lines'] / stats['total_lines'] * 100:.1f}%)")
+            stats_logger.info(f"  Категорий: {len(stats['categories'])}")
+            stats_logger.info(f"  Строк с API: {stats['table_lines']}")
+
+            # Проверка формата файла
+            file_format_err_msgs = check_file_format(lines)
+
+            # Получаем общую статистику по ошибкам
+            error_tracker = get_error_tracker()
+            if error_tracker:
+                error_summary = error_tracker.get_error_summary()
+                if error_summary['total_errors'] > 0:
+                    stats_logger.info(f"Всего ошибок в системе: {error_summary['total_errors']}")
+
+            # Обработка результатов проверки
+            if file_format_err_msgs:
+                main_logger.error("=" * 100)
+                main_logger.error("РЕЗУЛЬТАТ ПРОВЕРКИ: НЕУДАЧА ❌")
+                main_logger.error("=" * 100)
+
+                # Выводим ошибки пользователю
+                for err_msg in file_format_err_msgs:
+                    print(err_msg)
+                    main_logger.error(f"Ошибка валидации: {err_msg}", extra={'error_type': 'user_output'})
+
+                # Анализ типов ошибок
+                error_categories = Counter()
+                for err_msg in file_format_err_msgs:
+                    if "Title" in err_msg:
+                        error_categories['title'] += 1
+                    elif "description" in err_msg:
+                        error_categories['description'] += 1
+                    elif "auth" in err_msg:
+                        error_categories['auth'] += 1
+                    elif "HTTPS" in err_msg:
+                        error_categories['https'] += 1
+                    elif "CORS" in err_msg:
+                        error_categories['cors'] += 1
+                    elif "column" in err_msg:
+                        error_categories['columns'] += 1
+                    elif "segment" in err_msg:
+                        error_categories['formatting'] += 1
+                    elif "Critical" in err_msg:
+                        error_categories['critical'] += 1
+                    else:
+                        error_categories['other'] += 1
+
+                main_logger.error("ДЕТАЛЬНАЯ СТАТИСТИКА ОШИБОК:")
+                for err_type, count in sorted(error_categories.items(), key=lambda x: x[1], reverse=True):
+                    percentage = count / len(file_format_err_msgs) * 100
+                    main_logger.error(f"  {err_type.title()}: {count} ({percentage:.1f}%)")
+
+                main_logger.error(f"Всего ошибок: {len(file_format_err_msgs)}")
+                main_logger.error("=" * 100)
+                sys.exit(1)
+            else:
+                main_logger.info("=" * 100)
+                main_logger.info("РЕЗУЛЬТАТ ПРОВЕРКИ: УСПЕХ ✅")
+                main_logger.info("=" * 100)
+                main_logger.info("ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ УСПЕШНО!")
+                main_logger.info("Файл соответствует всем требованиям формата.")
+
+        except FileNotFoundError as e:
             error_msg = f"Файл не найден: {filename}"
-            logger.critical(error_msg)
+            exception_logger.log_exception(e, {'filename': filename}, level="critical")
             print(error_msg)
             sys.exit(1)
 
-        file_size = os.path.getsize(filename)
-        file_mtime = datetime.fromtimestamp(os.path.getmtime(filename)).strftime('%Y-%m-%d %H:%M:%S')
-
-        logger.info(f"Информация о файле:")
-        logger.info(f"  Размер: {file_size} байт ({file_size / 1024:.1f} KB)")
-        logger.info(f"  Путь: {os.path.abspath(filename)}")
-        logger.info(f"  Время изменения: {file_mtime}")
-
-        with open(filename, mode='r', encoding='utf-8') as file:
-            lines = list(line.rstrip() for line in file)
-
-        # Анализ содержимого файла
-        stats = analyze_file_content(lines)
-
-        logger.info("СТАТИСТИКА ФАЙЛА:")
-        logger.info(f"  Всего строк: {stats['total_lines']}")
-        logger.info(
-            f"  Непустых строк: {stats['non_empty_lines']} ({stats['non_empty_lines'] / stats['total_lines'] * 100:.1f}%)")
-        logger.info(f"  Категорий: {len(stats['categories'])}")
-        logger.info(f"  Строк с API: {stats['table_lines']}")
-
-        file_format_err_msgs = check_file_format(lines)
-
-        if file_format_err_msgs:
-            logger.error("=" * 100)
-            logger.error("РЕЗУЛЬТАТ ПРОВЕРКИ: НЕУДАЧА ❌")
-            logger.error("=" * 100)
-
-            # Анализ типов ошибок
-            error_categories = Counter()
-            for err_msg in file_format_err_msgs:
-                print(err_msg)
-                logger.error(err_msg, extra={'validation_type': 'error_output'})
-
-                # Классификация ошибок
-                err_lower = err_msg.lower()
-                if "title" in err_lower:
-                    error_categories['title'] += 1
-                elif "description" in err_lower:
-                    error_categories['description'] += 1
-                elif "auth" in err_lower:
-                    error_categories['auth'] += 1
-                elif "https" in err_lower:
-                    error_categories['https'] += 1
-                elif "cors" in err_lower:
-                    error_categories['cors'] += 1
-                elif "column" in err_lower:
-                    error_categories['columns'] += 1
-                elif "segment" in err_lower:
-                    error_categories['formatting'] += 1
-                else:
-                    error_categories['other'] += 1
-
-            # Детальная статистика ошибок
-            logger.error("ДЕТАЛЬНАЯ СТАТИСТИКА ОШИБОК:")
-            for err_type, count in sorted(error_categories.items(), key=lambda x: x[1], reverse=True):
-                percentage = count / len(file_format_err_msgs) * 100
-                logger.error(f"  {err_type.title()}: {count} ({percentage:.1f}%)")
-
-            logger.error(f"Всего ошибок: {len(file_format_err_msgs)}")
-            logger.error("=" * 100)
+        except UnicodeDecodeError as e:
+            error_msg = f"Ошибка кодировки файла: {str(e)}"
+            exception_logger.log_exception(e, {'filename': filename, 'encoding': 'utf-8'}, level="critical")
+            print(error_msg)
             sys.exit(1)
-        else:
-            logger.info("=" * 100)
-            logger.info("РЕЗУЛЬТАТ ПРОВЕРКИ: УСПЕХ ✅")
-            logger.info("=" * 100)
-            logger.info("ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ УСПЕШНО!")
-            logger.info("Файл соответствует всем требованиям формата.")
 
-    except FileNotFoundError:
-        error_msg = f"Файл не найден: {filename}"
-        logger.critical(error_msg, exc_info=True)
-        print(error_msg)
-        sys.exit(1)
-    except UnicodeDecodeError as e:
-        error_msg = f"Ошибка кодировки файла: {str(e)}"
-        logger.critical(error_msg, exc_info=True)
-        print(error_msg)
-        sys.exit(1)
-    except Exception as e:
-        error_msg = f"Неожиданная ошибка: {str(e)}"
-        logger.critical(error_msg, exc_info=True)
-        print(error_msg)
-        sys.exit(1)
+        except Exception as e:
+            error_msg = f"Критическая ошибка при выполнении программы: {str(e)}"
+            exception_logger.log_exception(e,
+                                           {
+                                               'filename': filename,
+                                               'program_run_id': module_logger.context.get('program_run_id'),
+                                               'python_version': sys.version
+                                           },
+                                           level="critical"
+                                           )
+            print(error_msg)
+            sys.exit(1)
 
 
 if __name__ == '__main__':
-    logger.debug("=" * 100)
-    logger.debug("СКРИПТ ЗАПУЩЕН НАПРЯМУЮ")
-    logger.debug(f"Python: {sys.version}")
-    logger.debug(f"Аргументы: {sys.argv}")
-    logger.debug("=" * 100)
+    # Инициализация логирования для запуска скрипта
+    main_logger.debug("=" * 100)
+    main_logger.debug("СКРИПТ ЗАПУЩЕН НАПРЯМУЮ")
+    main_logger.debug(f"Аргументы командной строки: {sys.argv}")
+    main_logger.debug(f"Рабочая директория: {os.getcwd()}")
+    main_logger.debug(f"Пользователь: {os.getenv('USER', os.getenv('USERNAME', 'unknown'))}")
+    main_logger.debug("=" * 100)
 
-    num_args = len(sys.argv)
-
-    if num_args < 2:
+    if len(sys.argv) < 2:
         error_msg = 'No .md file passed (file should contain Markdown table syntax)'
-        logger.error(error_msg)
+        error_logger.error(error_msg, extra={'error_type': 'argument_error'})
         print(error_msg)
         sys.exit(1)
 
     filename = sys.argv[1]
-    logger.info(f"Целевой файл: {filename}")
+    main_logger.info(f"Целевой файл: {filename}")
 
+    # Запуск основной функции
     main(filename)
